@@ -51,8 +51,7 @@ export class AuthController {
   @ApiBadRequestResponse()
   @Post('signup')
   async register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
-    const data = await this.authService.register(body)
-    return data
+    return this.authService.register(body)
   }
 
   @Post('refresh-token')

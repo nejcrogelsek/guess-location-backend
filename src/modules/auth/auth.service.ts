@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger
-} from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
 import { IAuthReturnData } from '../../interfaces/auth.interface'
@@ -73,7 +67,7 @@ export class AuthService {
         access_token
       }
     } catch (err) {
-      throw new BadRequestException('Check your request credentials.')
+      throw err
     } finally {
       this.logger.log('Creating a new user.')
     }

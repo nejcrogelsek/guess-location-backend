@@ -4,7 +4,8 @@ import {
   Controller,
   Get,
   Post,
-  Request,
+  Req,
+  Res,
   UseGuards
 } from '@nestjs/common'
 import { UsersService } from '../../modules/users/users.service'
@@ -16,39 +17,26 @@ import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
 import { JwtAuthGuard } from './auth-jwt.guard'
-import {
-  ApiBadRequestResponse,
-  ApiCreatedResponse
-} from '@nestjs/swagger'
 import { User } from '../../entities/user.entity'
+import { JwtService } from '@nestjs/jwt'
+import { ConfigService } from '@nestjs/config'
+import { ModulesContainer } from '@nestjs/core'
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private jwtService: JwtService,
+    private configService: ConfigService
   ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req): Promise<IAuthReturnData> {
-    const { access_token } = await this.authService.login(req.user)
-    const { id, email, first_name, last_name, profile_image } =
-      await this.usersService.findByEmail(req.user.email)
-    return {
-      user: {
-        id,
-        email,
-        first_name,
-        last_name,
-        profile_image
-      },
-      access_token
-    }
+  async login(@Req() req): Promise<IAuthReturnData> {
+    return this.authService.tryLogin(req.user)
   }
 
-  @ApiCreatedResponse({ type: User })
-  @ApiBadRequestResponse()
   @Post('signup')
   async register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
     return this.authService.register(body)
@@ -67,9 +55,29 @@ export class AuthController {
     }
   }
 
+  @Get('/confirmation/:token')
+  async verifyEmail(@Req() req, @Res() res) {
+    try {
+      const {
+        user: { id }
+      } = this.jwtService.verify(
+        req.params.token,
+        this.configService.get('JWT_SECRET')
+      )
+      await this.usersService.verifyEmail(req.user)
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException(
+        'Error on: /confirmation/:token controller.'
+      )
+    }
+
+    return res.redirect('http://localhost:3001/login')
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('protected')
-  async me(@Request() req): Promise<IUserDataFromToken> {
+  async me(@Req() req): Promise<IUserDataFromToken> {
     try {
       const user = await this.usersService.findById(req.user.id)
       return {

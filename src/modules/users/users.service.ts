@@ -19,6 +19,7 @@ export class UsersService {
     try {
       return this.usersRepository.find()
     } catch (err) {
+      console.log(err)
       throw new BadRequestException('Error while searching for users.')
     } finally {
       this.logger.log('Searching for users.')
@@ -50,9 +51,23 @@ export class UsersService {
       const user: User = await this.findById(id)
       return this.usersRepository.remove(user)
     } catch (err) {
+      console.log(err)
       throw new BadRequestException(`Cannot delete a user with id: ${id}`)
     } finally {
       this.logger.log(`Deleting a user with id: ${id}`)
+    }
+  }
+
+  async verifyEmail(reqUser: User) {
+    try {
+      const user: User = await this.findById(reqUser.id)
+      user.confirmed = true
+      await this.usersRepository.save(user)
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException(`Cannot verify a user with id: ${reqUser.id}`)
+    } finally {
+      this.logger.log(`Verifying a user with id: ${reqUser.id}`)
     }
   }
 }

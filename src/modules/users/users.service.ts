@@ -10,13 +10,15 @@ import { Repository } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import * as AWS from 'aws-sdk'
 import { randomBytes } from 'crypto'
+import * as bcrypt from 'bcrypt'
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @Injectable()
 export class UsersService {
   private logger = new Logger()
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-	private configService:ConfigService
+    private configService: ConfigService
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -101,5 +103,43 @@ export class UsersService {
 
     const uploadURL = await s3.getSignedUrlPromise('putObject', params)
     return uploadURL
+  }
+
+  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
+    try {
+      if (updateUserDto.email !== undefined) {
+        const user = await this.usersRepository.findOne({
+          email: updateUserDto.email
+        })
+        if (
+          user &&
+          user.id !== updateUserDto.id &&
+          updateUserDto.email === user.email
+        ) {
+          throw new BadRequestException(
+            `User with email: ${updateUserDto.email} already exists.`
+          )
+        }
+      }
+      const user = await this.findById(updateUserDto.id)
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword: string = await bcrypt.hash(
+        updateUserDto.password,
+        salt
+      )
+
+      user.email = updateUserDto.email
+      user.first_name = updateUserDto.first_name
+      user.last_name = updateUserDto.last_name
+      user.password = hashedPassword
+
+      return this.usersRepository.save(user)
+    } catch (err) {
+      throw new BadRequestException(
+        `Cannot update a user with id: ${updateUserDto.id}`
+      )
+    } finally {
+      this.logger.log(`Updating a user with id: ${updateUserDto.id}`)
+    }
   }
 }

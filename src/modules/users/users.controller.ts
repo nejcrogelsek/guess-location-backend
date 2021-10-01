@@ -1,16 +1,19 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Res
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiOkResponse } from '@nestjs/swagger'
 import { User } from '../../entities/user.entity'
 import { UsersService } from './users.service'
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @Controller('users')
 export class UsersController {
@@ -36,5 +39,10 @@ export class UsersController {
       console.log(err.message)
       throw new BadRequestException()
     }
+  }
+
+  @Patch('me/update')
+  updateUser(@Body() body: UpdateUserDto): Promise<User> {
+    return this.usersService.updateUser(body)
   }
 }

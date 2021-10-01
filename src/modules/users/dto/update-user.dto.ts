@@ -13,17 +13,17 @@ export class UpdateUserDto {
   id: number
 
   @IsOptional()
-  @IsEmail()
   email: string
 
   @IsOptional()
   first_name: string
 
   @IsOptional()
+  profile_image: string
+
+  @IsOptional()
   last_name: string
 
   @IsOptional()
-  @MinLength(6)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/)
   password: string
 }

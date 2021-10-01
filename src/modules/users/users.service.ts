@@ -123,15 +123,30 @@ export class UsersService {
       }
       const user = await this.findById(updateUserDto.id)
       const salt = await bcrypt.genSalt(10)
-      const hashedPassword: string = await bcrypt.hash(
-        updateUserDto.password,
-        salt
-      )
+      if (updateUserDto.password) {
+		  if(updateUserDto.password.length >= 6){
+			const hashedPassword: string = await bcrypt.hash(
+				updateUserDto.password,
+				salt
+			  )
+			  user.password = hashedPassword
+		  } else{
+			  throw new BadRequestException('Password must be equal or longer than 6 characters.')
+		  }
+      }
 
-      user.email = updateUserDto.email
-      user.first_name = updateUserDto.first_name
-      user.last_name = updateUserDto.last_name
-      user.password = hashedPassword
+      if (updateUserDto.email) {
+        user.email = updateUserDto.email
+      }
+      if (updateUserDto.first_name) {
+        user.first_name = updateUserDto.first_name
+      }
+      if (updateUserDto.last_name) {
+        user.last_name = updateUserDto.last_name
+      }
+      if (updateUserDto.profile_image) {
+        user.profile_image = updateUserDto.profile_image
+      }
 
       return this.usersRepository.save(user)
     } catch (err) {

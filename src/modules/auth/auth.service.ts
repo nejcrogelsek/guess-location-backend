@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   Logger,
-  UnauthorizedException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
@@ -68,7 +67,7 @@ export class AuthService {
           `User with email: ${createUserDto.email} already exists.`
         )
       }
-      const { confirm_password, password, ...rest } = createUserDto
+      const { password, ...rest } = createUserDto
       const salt = await bcrypt.genSalt(10)
       const hashedPassword: string = await bcrypt.hash(password, salt)
 

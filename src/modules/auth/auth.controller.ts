@@ -17,10 +17,8 @@ import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
 import { JwtAuthGuard } from './auth-jwt.guard'
-import { User } from '../../entities/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import { ModulesContainer } from '@nestjs/core'
 
 @Controller('auth')
 export class AuthController {

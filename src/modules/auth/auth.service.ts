@@ -40,13 +40,13 @@ export class AuthService {
       access_token: this.jwtService.sign(payload)
     }
   }
-  async tryLogin(user: User): Promise<IAuthReturnData> {
+  async login(user: User): Promise<IAuthReturnData> {
     const { access_token } = await this.getAccessToken(user)
     const { id, email, first_name, last_name, profile_image, confirmed } =
       await this.usersService.findByEmail(user.email)
-    if (!user.confirmed) {
-      throw new UnauthorizedException('Please confirm your email to login.')
-    }
+    // if (!user.confirmed) {
+    //   throw new UnauthorizedException('Please confirm your email to login.')
+    // }
     return {
       user: {
         id,

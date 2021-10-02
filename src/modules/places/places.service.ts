@@ -4,21 +4,26 @@ import { Place } from '../../entities/place.entity'
 import { Repository } from 'typeorm'
 import { CreateLocationDto } from './dto/create-location.dto'
 import { User } from 'src/entities/user.entity'
+import { CreateGuessDto } from './dto/create-guess.dto'
+import { Guess } from 'src/entities/guess.entity'
 
 @Injectable()
 export class PlacesService {
   private logger = new Logger()
   constructor(
     @InjectRepository(Place) private placesRepository: Repository<Place>,
-    @InjectRepository(User) private usersRepository: Repository<User>
+    @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(Guess) private guessRepository: Repository<Guess>
   ) {}
 
   async getRecent(): Promise<Place[]> {
     try {
-      return this.placesRepository.find({
+      const places = await this.placesRepository.find({
         relations: ['user'],
         order: { updated_at: 'DESC' }
       })
+      console.log(places[0].user_id)
+      return places
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(
@@ -75,6 +80,36 @@ export class PlacesService {
       throw new BadRequestException('Error creating a location.')
     } finally {
       this.logger.log('Creating a new location.')
+    }
+  }
+
+  async guessLocation(createGuessDto: CreateGuessDto): Promise<Guess> {
+    try {
+      const location = await this.placesRepository.findOne(
+        createGuessDto.location_id
+      )
+      const user = await this.usersRepository.findOne(createGuessDto.user_id)
+      const guesses = await this.guessRepository.find()
+      for (let i = 0; i < guesses.length; i++) {
+        if (
+          createGuessDto.user_id === guesses[i].user_id &&
+          createGuessDto.location_id === guesses[i].location_id
+        ) {
+          await this.guessRepository.remove(guesses[i])
+        }
+      }
+      const newGuess = this.guessRepository.create({
+        location_id: location.id,
+        user_id: user.id,
+        city: createGuessDto.city,
+        distance: 100
+      })
+      return this.guessRepository.save(newGuess)
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException('Error guessing a location.')
+    } finally {
+      this.logger.log('Guessing location.')
     }
   }
 }

@@ -6,7 +6,7 @@ import { PlacesController } from './places.controller'
 import { PlacesService } from './places.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Place])],
+  imports: [TypeOrmModule.forFeature([Place,User])],
   controllers: [PlacesController],
   providers: [PlacesService],
   exports: [PlacesService]

@@ -14,13 +14,16 @@ export class Place {
   id: number
 
   @Column()
-  lat: string
+  lat: number
 
   @Column()
-  long: string
+  long: number
 
   @Column()
   city: string
+
+  @Column()
+  user_id: number
 
   @ManyToOne(() => User, (user) => user.places, { onDelete: 'CASCADE' })
   place: Place

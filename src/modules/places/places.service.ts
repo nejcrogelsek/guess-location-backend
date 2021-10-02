@@ -19,10 +19,8 @@ export class PlacesService {
   async getRecent(): Promise<Place[]> {
     try {
       const places = await this.placesRepository.find({
-        relations: ['user'],
         order: { updated_at: 'DESC' }
       })
-      console.log(places[0].user_id)
       return places
     } catch (err) {
       console.log(err.message)
@@ -72,7 +70,7 @@ export class PlacesService {
       const user = await this.usersRepository.findOne(createLocationDto.user_id)
       const newLocation = this.placesRepository.create(createLocationDto)
       const savedLocation = await this.placesRepository.save(newLocation)
-      user.places.push(savedLocation)
+      //user.places.push(savedLocation)
       await this.usersRepository.save(user)
       return savedLocation
     } catch (err) {
@@ -110,6 +108,18 @@ export class PlacesService {
       throw new BadRequestException('Error guessing a location.')
     } finally {
       this.logger.log('Guessing location.')
+    }
+  }
+
+  async deleteLocation(id: number): Promise<Place> {
+    try {
+      const location: Place = await this.placesRepository.findOne(id)
+      return this.placesRepository.remove(location)
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException(`Cannot delete a location with id: ${id}`)
+    } finally {
+      this.logger.log(`Deleting a location with id: ${id}`)
     }
   }
 }

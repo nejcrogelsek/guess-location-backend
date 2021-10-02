@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common'
 import { Guess } from 'src/entities/guess.entity'
 import { Place } from 'src/entities/place.entity'
 import { CreateGuessDto } from './dto/create-guess.dto'
@@ -27,6 +27,11 @@ export class PlacesController {
   @Post()
   createLocation(@Body() body: CreateLocationDto): Promise<Place> {
     return this.placesService.createLocation(body)
+  }
+
+  @Delete('/:id')
+  deleteLocation(@Param('id', ParseIntPipe) id: number): Promise<Place> {
+    return this.placesService.deleteLocation(id)
   }
 
   @Post('location/guess/:id')

@@ -5,6 +5,7 @@ import { configValidationSchema } from '../config.schema'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuthModule } from './auth/auth.module'
+import { PlacesModule } from './places/places.module'
 import { UsersModule } from './users/users.module'
 
 @Module({
@@ -29,7 +30,8 @@ import { UsersModule } from './users/users.module'
       })
     }),
     AuthModule,
-	UsersModule
+    UsersModule,
+    PlacesModule
   ],
   controllers: [AppController],
   providers: [AppService]

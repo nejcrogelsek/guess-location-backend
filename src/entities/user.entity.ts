@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
+import { Place } from './place.entity'
 
 @Entity()
 export class User {
@@ -28,6 +30,9 @@ export class User {
 
   @Column({ default: false })
   confirmed: boolean
+
+  @OneToMany(() => Place, (place) => place.place)
+  places: Place[]
 
   @CreateDateColumn()
   created_at: Date

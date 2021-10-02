@@ -13,6 +13,8 @@ export class CreateLocationDto {
   @IsNumber()
   long: number
 
+  location_image: string
+
   @IsNotEmpty()
   city: string
 }

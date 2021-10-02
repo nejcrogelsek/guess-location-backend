@@ -25,6 +25,9 @@ export class Place {
   city: string
 
   @Column()
+  location_image: string
+
+  @Column()
   user_id: number
 
   @ManyToOne(() => User, (user) => user.places, { onDelete: 'CASCADE' })

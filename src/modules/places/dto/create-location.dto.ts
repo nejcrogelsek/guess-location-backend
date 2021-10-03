@@ -16,5 +16,5 @@ export class CreateLocationDto {
   location_image: string
 
   @IsNotEmpty()
-  city: string
+  address: string
 }

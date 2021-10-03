@@ -23,7 +23,7 @@ export class Guess {
   distance: number
 
   @Column()
-  city: string
+  address: string
 
   @ManyToOne(() => Place, (place) => place.guesses, { onDelete: 'CASCADE' })
   guess: Place

@@ -99,7 +99,7 @@ export class PlacesService {
       const newGuess = this.guessRepository.create({
         location_id: location.id,
         user_id: user.id,
-        city: createGuessDto.city,
+        address: createGuessDto.address,
         distance: 100
       })
       return this.guessRepository.save(newGuess)

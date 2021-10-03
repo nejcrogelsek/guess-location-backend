@@ -80,7 +80,8 @@ export class UsersService {
   }
 
   async generateUploadUrl(): Promise<string> {
-    const bucketName = this.configService.get('AWS_STORAGE_BUCKET_NAME')
+    try{
+		const bucketName = this.configService.get('AWS_STORAGE_BUCKET_NAME')
     const region = this.configService.get('AWS_BUCKET_REGION')
     const accessKeyId = this.configService.get('AWS_ACCESS_KEY_ID')
     const secretAccessKey = this.configService.get('AWS_SECRET_ACCESS_KEY')
@@ -103,6 +104,9 @@ export class UsersService {
 
     const uploadURL = await s3.getSignedUrlPromise('putObject', params)
     return uploadURL
+	} catch(err){
+		console.log(err)
+	}
   }
 
   async updateUser(updateUserDto: UpdateUserDto): Promise<User> {

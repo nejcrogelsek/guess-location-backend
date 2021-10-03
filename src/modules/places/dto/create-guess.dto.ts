@@ -18,5 +18,5 @@ export class CreateGuessDto {
   long: number
 
   @IsOptional()
-  city: string
+  address: string
 }

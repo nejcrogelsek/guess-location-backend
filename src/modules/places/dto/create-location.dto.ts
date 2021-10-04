@@ -6,12 +6,10 @@ export class CreateLocationDto {
   user_id: number
 
   @IsNotEmpty()
-  @IsNumber()
-  lat: number
+  lat: string
 
   @IsNotEmpty()
-  @IsNumber()
-  long: number
+  long: string
 
   location_image: string
 

@@ -18,10 +18,9 @@ export class PlacesService {
 
   async getRecent(): Promise<Place[]> {
     try {
-      const places = await this.placesRepository.find({
-        order: { updated_at: 'DESC' }
+      return this.placesRepository.find({
+        order: { updated_at: 'ASC' }
       })
-      return places
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(
@@ -34,9 +33,7 @@ export class PlacesService {
 
   async getPersonalBest(): Promise<Place[]> {
     try {
-      return this.placesRepository.find({
-        relations: ['user']
-      })
+      return this.placesRepository.find()
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(
@@ -68,7 +65,13 @@ export class PlacesService {
   async createLocation(createLocationDto: CreateLocationDto): Promise<Place> {
     try {
       const user = await this.usersRepository.findOne(createLocationDto.user_id)
-      const newLocation = this.placesRepository.create(createLocationDto)
+      const newLocation = this.placesRepository.create({
+        user_id: createLocationDto.user_id,
+        city: createLocationDto.address,
+        lat: createLocationDto.lat,
+        long: createLocationDto.long,
+        location_image: createLocationDto.location_image
+      })
       const savedLocation = await this.placesRepository.save(newLocation)
       //user.places.push(savedLocation)
       await this.usersRepository.save(user)
@@ -81,12 +84,29 @@ export class PlacesService {
     }
   }
 
+  async getGuesses(): Promise<Guess[]> {
+    try {
+      return this.guessRepository.find()
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Searching for all guesses.')
+    }
+  }
+  async getUserGuess(data: {location_id:number, user_id:number}): Promise<Guess> {
+    try {
+      return this.guessRepository.findOne({location_id: data.location_id,user_id:data.user_id})
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Searching for all guesses.')
+    }
+  }
+
   async guessLocation(createGuessDto: CreateGuessDto): Promise<Guess> {
     try {
-      const location = await this.placesRepository.findOne(
-        createGuessDto.location_id
-      )
-      const user = await this.usersRepository.findOne(createGuessDto.user_id)
       const guesses = await this.guessRepository.find()
       for (let i = 0; i < guesses.length; i++) {
         if (
@@ -97,10 +117,10 @@ export class PlacesService {
         }
       }
       const newGuess = this.guessRepository.create({
-        location_id: location.id,
-        user_id: user.id,
+        location_id: createGuessDto.location_id,
+        user_id: createGuessDto.user_id,
         address: createGuessDto.address,
-        distance: 100
+        distance: createGuessDto.distance
       })
       return this.guessRepository.save(newGuess)
     } catch (err) {
@@ -120,6 +140,17 @@ export class PlacesService {
       throw new BadRequestException(`Cannot delete a location with id: ${id}`)
     } finally {
       this.logger.log(`Deleting a location with id: ${id}`)
+    }
+  }
+  async deleteGuess(id: number): Promise<Guess> {
+    try {
+      const guess: Guess = await this.guessRepository.findOne(id)
+      return this.guessRepository.remove(guess)
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException(`Cannot delete a guess with id: ${id}`)
+    } finally {
+      this.logger.log(`Deleting a guess with id: ${id}`)
     }
   }
 }

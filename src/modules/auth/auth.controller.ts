@@ -31,12 +31,12 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req): Promise<IAuthReturnData> {
+  login(@Req() req): Promise<IAuthReturnData> {
     return this.authService.login(req.user)
   }
 
   @Post('register')
-  async register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
+  register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
     return this.authService.register(body)
   }
 

@@ -15,11 +15,11 @@ export class Place {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  lat: number
+  @Column({ type: 'real' })
+  lat: string
 
-  @Column()
-  long: number
+  @Column({ type: 'real' })
+  long: string
 
   @Column()
   city: string

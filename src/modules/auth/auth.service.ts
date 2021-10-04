@@ -81,45 +81,6 @@ export class AuthService {
 
       const { id, email, first_name, last_name, profile_image } = savedUser
 
-      // transporter
-      //   const transporter = nodemailer.createTransport({
-      //     service: 'gmail',
-      //     host: 'smtp.gmail.com',
-      //     port: 25,
-      //     secure: true,
-      //     auth: {
-      //       user: email,
-      //       pass: createUserDto.password
-      //     },
-      //     tls: {
-      //       rejectUnauthorized: false
-      //     }
-      //   })
-      //   await transporter.sendMail({
-      //     to: email,
-      //     subject: 'Confirm Email',
-      //     html: 'Please click this link to confirm your email.'
-      //   })
-
-      //   this.jwtService.sign(
-      //     {
-      //       user: id
-      //     },
-      //     this.configService.get('JWT_SECRET'),
-      //     {
-      //       expiresIn: '1d'
-      //     },
-      //     (err, emailToken) => {
-      //       const url = `http://localhost:3000/confirmation/${emailToken}`
-
-      //       transporter.sendEmail({
-      //         to: email,
-      //         subject: 'Confirm Email',
-      //         html: `Please click this link to confirm your email: <a href='${url}'>${url}</a>`
-      //       })
-      //     }
-      //   )
-
       return {
         user: {
           id,

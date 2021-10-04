@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
+import { IsNotEmpty, IsNumber } from 'class-validator'
 
 export class CreateGuessDto {
   @IsNotEmpty()
@@ -10,13 +10,8 @@ export class CreateGuessDto {
   location_id: number
 
   @IsNotEmpty()
-  @IsNumber()
-  lat: number
+  distance: number
 
   @IsNotEmpty()
-  @IsNumber()
-  long: number
-
-  @IsOptional()
   address: string
 }

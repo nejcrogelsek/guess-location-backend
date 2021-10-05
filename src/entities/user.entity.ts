@@ -28,6 +28,9 @@ export class User {
   @Column()
   password: string
 
+  @Column({default: null})
+  email_token: string | null
+
   @Column({ default: false })
   confirmed: boolean
 

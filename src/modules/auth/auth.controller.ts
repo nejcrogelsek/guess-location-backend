@@ -53,24 +53,9 @@ export class AuthController {
     }
   }
 
-  @Get('/confirmation/:token')
+  @Get('/verify-email')
   async verifyEmail(@Req() req, @Res() res) {
-    try {
-      const {
-        user: { id }
-      } = this.jwtService.verify(
-        req.params.token,
-        this.configService.get('JWT_SECRET')
-      )
-      await this.usersService.verifyEmail(req.user)
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException(
-        'Error on: /confirmation/:token controller.'
-      )
-    }
-
-    return res.redirect('http://localhost:3001/login')
+    return this.authService.verifyEmail(req,res)
   }
 
   @UseGuards(JwtAuthGuard)

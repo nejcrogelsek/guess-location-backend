@@ -6,6 +6,7 @@ import { CreateLocationDto } from './dto/create-location.dto'
 import { User } from '../../entities/user.entity'
 import { CreateGuessDto } from './dto/create-guess.dto'
 import { Guess } from '../../entities/guess.entity'
+import { IPersonalBest } from 'src/interfaces/place.interface'
 
 @Injectable()
 export class PlacesService {
@@ -19,7 +20,7 @@ export class PlacesService {
   async getRecent(): Promise<Place[]> {
     try {
       return this.placesRepository.find({
-        order: { updated_at: 'ASC' },
+        order: { updated_at: 'DESC' },
         relations: ['guesses']
       })
     } catch (err) {
@@ -32,9 +33,28 @@ export class PlacesService {
     }
   }
 
-  async getPersonalBest(): Promise<Place[]> {
+  async getPersonalBest(user_id: number): Promise<IPersonalBest[]> {
     try {
-      return this.placesRepository.find({ relations: ['guesses'] })
+      const result: IPersonalBest[] = []
+      const guesses = await this.guessRepository.find({ user_id: user_id })
+      for (let i = 0; i < guesses.length; i++) {
+        const l = await this.placesRepository.findOne({
+          id: guesses[i].location_id
+        })
+        result.push({
+          location: {
+            id: l.id,
+            lat: l.lat,
+            long: l.long,
+            city: l.city,
+            location_image: l.location_image,
+            user_id: l.user_id
+          },
+          distance: guesses[i].distance
+        })
+      }
+      result.sort(({ distance: a }, { distance: b }) => a - b)
+      return result.slice(0, 3)
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(
@@ -48,7 +68,7 @@ export class PlacesService {
   async getRandom(): Promise<Place> {
     try {
       const locations = await this.placesRepository.find({
-        relations: ['user']
+        relations: ['guesses']
       })
       const location: Place =
         locations[Math.floor(Math.random() * locations.length)]
@@ -98,6 +118,7 @@ export class PlacesService {
       this.logger.log('Searching for all guesses.')
     }
   }
+
   async getUserGuess(data: {
     location_id: number
     user_id: number
@@ -159,6 +180,7 @@ export class PlacesService {
       this.logger.log(`Deleting a location with id: ${id}`)
     }
   }
+
   async deleteGuess(id: number): Promise<Guess> {
     try {
       const guess: Guess = await this.guessRepository.findOne(id)

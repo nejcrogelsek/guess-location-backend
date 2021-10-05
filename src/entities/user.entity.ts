@@ -38,11 +38,12 @@ export class User {
   @ApiProperty()
   @Column({ default: null })
   email_token: string | null
-  
+
   @ApiProperty()
   @Column({ default: false })
   confirmed: boolean
 
+  @ApiProperty({ isArray: true })
   @OneToMany(() => Place, (place) => place.place)
   places: Place[]
 

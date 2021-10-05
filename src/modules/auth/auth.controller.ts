@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,7 +7,6 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common'
-import { UsersService } from '../../modules/users/users.service'
 import {
   IAuthReturnData,
   IUserDataFromToken
@@ -17,62 +15,56 @@ import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
 import { JwtAuthGuard } from './auth-jwt.guard'
-import { JwtService } from '@nestjs/jwt'
-import { ConfigService } from '@nestjs/config'
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiTags
+} from '@nestjs/swagger'
+import { User } from '../../entities/user.entity'
+import { LoginUserDto } from './dto/login-user.dto'
+import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
-    private authService: AuthService,
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private configService: ConfigService
+    private authService: AuthService
   ) {}
 
+  @ApiCreatedResponse({ description: 'API login user.' })
+  @ApiBadRequestResponse()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Req() req): Promise<IAuthReturnData> {
-    return this.authService.login(req.user)
+  login(@Body() body: LoginUserDto): Promise<IAuthReturnData> {
+    return this.authService.login(body)
   }
 
+  @ApiCreatedResponse({ type: User, description: 'API register user.' })
+  @ApiBadRequestResponse()
   @Post('register')
   register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
     return this.authService.register(body)
   }
 
+  @ApiCreatedResponse({ description: 'API request refresh token.' })
+  @ApiBadRequestResponse()
   @Post('refresh-token')
-  async refreshToken(@Body() body): Promise<{ access_token: string }> {
-    try {
-      const { access_token } = await this.authService.refreshToken(body)
-      return {
-        access_token
-      }
-    } catch (err) {
-      console.log(err.message)
-      throw new BadRequestException()
-    }
+  refreshToken(@Body() body:GetRefreshTokenDto): Promise<{ access_token: string }> {
+    return this.authService.refreshToken(body)
   }
 
+  @ApiCreatedResponse({ description: 'API verify email address.' })
+  @ApiBadRequestResponse()
   @Get('/verify-email')
-  async verifyEmail(@Req() req, @Res() res) {
-    return this.authService.verifyEmail(req,res)
+  verifyEmail(@Req() req, @Res() res) {
+    return this.authService.verifyEmail(req, res)
   }
 
+  @ApiCreatedResponse({ description: 'API for protected routes which return user data if user is authenticated.' })
+  @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Get('protected')
-  async me(@Req() req): Promise<IUserDataFromToken> {
-    try {
-      const user = await this.usersService.findById(req.user.id)
-      return {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        profile_image: user.profile_image
-      }
-    } catch (err) {
-      console.log(err.message)
-      throw new BadRequestException()
-    }
+  me(@Req() req): Promise<IUserDataFromToken> {
+    return this.authService.me(req)
   }
 }

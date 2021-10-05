@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
-import { IAuthReturnData } from '../../interfaces/auth.interface'
+import {
+  IAuthReturnData,
+  IUserDataFromToken
+} from '../../interfaces/auth.interface'
 import { Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import * as bcrypt from 'bcrypt'
@@ -10,6 +13,8 @@ import { UsersService } from '../users/users.service'
 import { ConfigService } from '@nestjs/config'
 import * as sgMail from '@sendgrid/mail'
 import { randomBytes } from 'crypto'
+import { LoginUserDto } from './dto/login-user.dto'
+import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 @Injectable()
 export class AuthService {
   private logger = new Logger()
@@ -23,38 +28,63 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string): Promise<User> {
-    this.logger.log('Validating a user...')
-    const user = await this.usersService.findByEmail(email)
-    if (user && (await bcrypt.compare(password, user.password))) {
-      return user
-    }
+    try {
+      const user = await this.usersService.findByEmail(email)
+      if (user && (await bcrypt.compare(password, user.password))) {
+        return user
+      }
 
-    return null
+      return null
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException('Error validation a user.')
+    } finally {
+      this.logger.log('Validating a user...')
+    }
   }
 
   async getAccessToken(user: User): Promise<{ access_token: string }> {
-    const payload = { name: user.email, sub: user.id }
-    return {
-      access_token: this.jwtService.sign(payload)
+    try {
+      const payload = { name: user.email, sub: user.id }
+      return {
+        access_token: this.jwtService.sign(payload)
+      }
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException(
+        'Error while getting the user access token.'
+      )
+    } finally {
+      this.logger.log('Getting the user access token.')
     }
   }
 
-  async login(user: User): Promise<IAuthReturnData> {
-    const { access_token } = await this.getAccessToken(user)
-    const { id, email, first_name, last_name, profile_image, confirmed } =
-      await this.usersService.findByEmail(user.email)
-    // if (!user.confirmed) {
-    //   throw new UnauthorizedException('Please confirm your email to login.')
-    // }
-    return {
-      user: {
-        id,
-        email,
-        first_name,
-        last_name,
-        profile_image
-      },
-      access_token
+  async login(loginUserDto: LoginUserDto): Promise<IAuthReturnData> {
+    try {
+      const user = await this.usersRepository.findOne({
+        email: loginUserDto.username
+      })
+      // if (!user.confirmed) {
+      //   throw new UnauthorizedException('Please confirm your email to login.')
+      // }
+      const { access_token } = await this.getAccessToken(user)
+      const { id, email, first_name, last_name, profile_image, confirmed } =
+        await this.usersService.findByEmail(user.email)
+      return {
+        user: {
+          id,
+          email,
+          first_name,
+          last_name,
+          profile_image
+        },
+        access_token
+      }
+    } catch (err) {
+      console.log(err)
+      throw new BadRequestException('Error while logging user.')
+    } finally {
+      this.logger.log('Logging user in application.')
     }
   }
 
@@ -150,12 +180,37 @@ export class AuthService {
     }
   }
 
-  async refreshToken(payload: {
-    name: string
-    sub: number
-  }): Promise<{ access_token: string }> {
-    return {
-      access_token: this.jwtService.sign(payload)
+  async refreshToken(
+    payload: GetRefreshTokenDto
+  ): Promise<{ access_token: string }> {
+    try {
+      const access_token = this.jwtService.sign(payload)
+      return {
+        access_token
+      }
+    } catch (err) {
+      console.log(err.message)
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Request refresh token.')
+    }
+  }
+
+  async me(req): Promise<IUserDataFromToken> {
+    try {
+      const user = await this.usersService.findById(req.user.id)
+      return {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        profile_image: user.profile_image
+      }
+    } catch (err) {
+      console.log(err.message)
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Authenticated user requesting for data. function => me')
     }
   }
 }

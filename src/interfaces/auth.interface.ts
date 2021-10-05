@@ -1,4 +1,4 @@
-export interface IAuthReturnData {
+export type IAuthReturnData = {
   user: {
     id: number
     email: string

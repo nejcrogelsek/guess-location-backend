@@ -9,8 +9,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
 
   const config = new DocumentBuilder()
-    .setTitle('Nest API')
-    .setDescription('This is API for NestJS crash course.')
+    .setTitle('Geotagger API')
+    .setDescription('This is API for NestJS Geotagger project.')
     .setVersion('1.0.0')
     .build()
 

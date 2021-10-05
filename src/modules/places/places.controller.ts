@@ -7,12 +7,14 @@ import {
   ParseIntPipe,
   Post
 } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
 import { Guess } from 'src/entities/guess.entity'
 import { Place } from 'src/entities/place.entity'
 import { CreateGuessDto } from './dto/create-guess.dto'
 import { CreateLocationDto } from './dto/create-location.dto'
 import { PlacesService } from './places.service'
 
+@ApiTags('places')
 @Controller('location')
 export class PlacesController {
   constructor(private placesService: PlacesService) {}

@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Place } from '../../entities/place.entity'
 import { Repository } from 'typeorm'
 import { CreateLocationDto } from './dto/create-location.dto'
-import { User } from 'src/entities/user.entity'
+import { User } from '../../entities/user.entity'
 import { CreateGuessDto } from './dto/create-guess.dto'
-import { Guess } from 'src/entities/guess.entity'
+import { Guess } from '../../entities/guess.entity'
 
 @Injectable()
 export class PlacesService {
@@ -19,7 +19,8 @@ export class PlacesService {
   async getRecent(): Promise<Place[]> {
     try {
       return this.placesRepository.find({
-        order: { updated_at: 'ASC' }
+        order: { updated_at: 'ASC' },
+        relations: ['guesses']
       })
     } catch (err) {
       console.log(err.message)
@@ -33,7 +34,7 @@ export class PlacesService {
 
   async getPersonalBest(): Promise<Place[]> {
     try {
-      return this.placesRepository.find()
+      return this.placesRepository.find({ relations: ['guesses'] })
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(
@@ -64,7 +65,10 @@ export class PlacesService {
 
   async createLocation(createLocationDto: CreateLocationDto): Promise<Place> {
     try {
-      const user = await this.usersRepository.findOne(createLocationDto.user_id)
+      const user = await this.usersRepository.findOne(
+        createLocationDto.user_id,
+        { relations: ['places'] }
+      )
       const newLocation = this.placesRepository.create({
         user_id: createLocationDto.user_id,
         city: createLocationDto.address,
@@ -73,7 +77,7 @@ export class PlacesService {
         location_image: createLocationDto.location_image
       })
       const savedLocation = await this.placesRepository.save(newLocation)
-      //user.places.push(savedLocation)
+      user.places.push(savedLocation)
       await this.usersRepository.save(user)
       return savedLocation
     } catch (err) {
@@ -94,9 +98,15 @@ export class PlacesService {
       this.logger.log('Searching for all guesses.')
     }
   }
-  async getUserGuess(data: {location_id:number, user_id:number}): Promise<Guess> {
+  async getUserGuess(data: {
+    location_id: number
+    user_id: number
+  }): Promise<Guess> {
     try {
-      return this.guessRepository.findOne({location_id: data.location_id,user_id:data.user_id})
+      return this.guessRepository.findOne({
+        location_id: data.location_id,
+        user_id: data.user_id
+      })
     } catch (err) {
       console.log(err)
       throw new BadRequestException()
@@ -107,6 +117,10 @@ export class PlacesService {
 
   async guessLocation(createGuessDto: CreateGuessDto): Promise<Guess> {
     try {
+      const location = await this.placesRepository.findOne(
+        createGuessDto.location_id,
+        { relations: ['guesses'] }
+      )
       const guesses = await this.guessRepository.find()
       for (let i = 0; i < guesses.length; i++) {
         if (
@@ -122,7 +136,10 @@ export class PlacesService {
         address: createGuessDto.address,
         distance: createGuessDto.distance
       })
-      return this.guessRepository.save(newGuess)
+      const savedGuess = await this.guessRepository.save(newGuess)
+      location.guesses.push(savedGuess)
+      await this.placesRepository.save(location)
+      return savedGuess
     } catch (err) {
       console.log(err)
       throw new BadRequestException('Error guessing a location.')

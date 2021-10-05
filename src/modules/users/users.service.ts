@@ -23,7 +23,7 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     try {
-      return this.usersRepository.find()
+      return this.usersRepository.find({ relations: ['places'] })
     } catch (err) {
       console.log(err)
       throw new BadRequestException('Error while searching for users.')
@@ -80,33 +80,33 @@ export class UsersService {
   }
 
   async generateUploadUrl(): Promise<string> {
-    try{
-		const bucketName = this.configService.get('AWS_STORAGE_BUCKET_NAME')
-    const region = this.configService.get('AWS_BUCKET_REGION')
-    const accessKeyId = this.configService.get('AWS_ACCESS_KEY_ID')
-    const secretAccessKey = this.configService.get('AWS_SECRET_ACCESS_KEY')
+    try {
+      const bucketName = this.configService.get('AWS_STORAGE_BUCKET_NAME')
+      const region = this.configService.get('AWS_BUCKET_REGION')
+      const accessKeyId = this.configService.get('AWS_ACCESS_KEY_ID')
+      const secretAccessKey = this.configService.get('AWS_SECRET_ACCESS_KEY')
 
-    const s3 = new AWS.S3({
-      region,
-      accessKeyId,
-      secretAccessKey,
-      signatureVersion: 'v4'
-    })
+      const s3 = new AWS.S3({
+        region,
+        accessKeyId,
+        secretAccessKey,
+        signatureVersion: 'v4'
+      })
 
-    const rawBytes = randomBytes(16)
-    const imageName = rawBytes.toString('hex')
+      const rawBytes = randomBytes(16)
+      const imageName = rawBytes.toString('hex')
 
-    const params = {
-      Bucket: bucketName,
-      Key: imageName,
-      Expires: 60
+      const params = {
+        Bucket: bucketName,
+        Key: imageName,
+        Expires: 60
+      }
+
+      const uploadURL = await s3.getSignedUrlPromise('putObject', params)
+      return uploadURL
+    } catch (err) {
+      console.log(err)
     }
-
-    const uploadURL = await s3.getSignedUrlPromise('putObject', params)
-    return uploadURL
-	} catch(err){
-		console.log(err)
-	}
   }
 
   async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
@@ -128,15 +128,17 @@ export class UsersService {
       const user = await this.findById(updateUserDto.id)
       const salt = await bcrypt.genSalt(10)
       if (updateUserDto.password) {
-		  if(updateUserDto.password.length >= 6){
-			const hashedPassword: string = await bcrypt.hash(
-				updateUserDto.password,
-				salt
-			  )
-			  user.password = hashedPassword
-		  } else{
-			  throw new BadRequestException('Password must be equal or longer than 6 characters.')
-		  }
+        if (updateUserDto.password.length >= 6) {
+          const hashedPassword: string = await bcrypt.hash(
+            updateUserDto.password,
+            salt
+          )
+          user.password = hashedPassword
+        } else {
+          throw new BadRequestException(
+            'Password must be equal or longer than 6 characters.'
+          )
+        }
       }
 
       if (updateUserDto.email) {

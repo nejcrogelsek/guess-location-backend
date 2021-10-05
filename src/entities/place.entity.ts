@@ -31,7 +31,7 @@ export class Place {
   user_id: number
 
   @ManyToOne(() => User, (user) => user.places, { onDelete: 'CASCADE' })
-  place: Place
+  place: User
 
   @OneToMany(() => Guess, (guess) => guess.guess)
   guesses: Guess[]

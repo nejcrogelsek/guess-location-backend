@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { Guess } from '../entities/guess.entity'
+import { Place } from '../entities/place.entity'
+import { User } from '../entities/user.entity'
 import { configValidationSchema } from '../config.schema'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -25,7 +28,8 @@ import { UsersModule } from './users/users.module'
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        autoLoadEntities: true,
+        entities: [User,Place,Guess],
+		autoLoadEntities: true,
         synchronize: true
       })
     }),

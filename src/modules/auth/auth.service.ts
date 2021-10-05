@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
-import { IAuthReturnData } from '../../interfaces/auth.interface'
+import {
+  IAuthReturnData,
+  IUserDataFromToken
+} from '../../interfaces/auth.interface'
 import { Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import * as bcrypt from 'bcrypt'
@@ -26,7 +29,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     try {
-      const user = await this.usersService.findByEmail(email)
+      const user = await this.usersRepository.findOne({ email })
       if (user && (await bcrypt.compare(password, user.password))) {
         return user
       }
@@ -66,7 +69,7 @@ export class AuthService {
       // }
       const { access_token } = await this.getAccessToken(user)
       const { id, email, first_name, last_name, profile_image, confirmed } =
-        await this.usersService.findByEmail(user.email)
+        user
       return {
         user: {
           id,
@@ -190,6 +193,24 @@ export class AuthService {
       throw new BadRequestException()
     } finally {
       this.logger.log('Request refresh token.')
+    }
+  }
+
+  async me(req): Promise<IUserDataFromToken> {
+    try {
+      const user = await this.usersService.findById(req.user.id)
+      return {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        profile_image: user.profile_image
+      }
+    } catch (err) {
+      console.log(err.message)
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Authenticated user requesting for data. function => me')
     }
   }
 }

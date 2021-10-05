@@ -8,7 +8,8 @@ import {
   UseGuards
 } from '@nestjs/common'
 import {
-  IAuthReturnData
+  IAuthReturnData,
+  IUserDataFromToken
 } from '../../interfaces/auth.interface'
 import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -21,13 +22,12 @@ import {
 import { User } from '../../entities/user.entity'
 import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
+import { JwtAuthGuard } from './auth-jwt.guard'
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @ApiCreatedResponse({ description: 'API login user.' })
   @ApiBadRequestResponse()
@@ -47,7 +47,9 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'API request refresh token.' })
   @ApiBadRequestResponse()
   @Post('refresh-token')
-  refreshToken(@Body() body:GetRefreshTokenDto): Promise<{ access_token: string }> {
+  refreshToken(
+    @Body() body: GetRefreshTokenDto
+  ): Promise<{ access_token: string }> {
     return this.authService.refreshToken(body)
   }
 
@@ -56,5 +58,16 @@ export class AuthController {
   @Get('/verify-email')
   verifyEmail(@Req() req, @Res() res) {
     return this.authService.verifyEmail(req, res)
+  }
+
+  @ApiCreatedResponse({
+    description:
+      'API for protected routes which return user data if user is authenticated.'
+  })
+  @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
+  @Get('protected')
+  me(@Req() req): Promise<IUserDataFromToken> {
+    return this.authService.me(req)
   }
 }

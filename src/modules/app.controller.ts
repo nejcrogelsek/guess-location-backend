@@ -1,14 +1,20 @@
-import { Controller, Get, InternalServerErrorException } from '@nestjs/common'
+import { Controller, Get } from '@nestjs/common'
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiTags
+} from '@nestjs/swagger'
+import { AppService } from './app.service'
 
+@ApiTags('app')
 @Controller()
 export class AppController {
+  constructor(private appService: AppService) {}
+
+  @ApiCreatedResponse({ description: 'API default.' })
+  @ApiBadRequestResponse()
   @Get()
-  getHello(): string {
-    try {
-      return 'This is NestJS API for project Geotagger.'
-    } catch (err) {
-      console.log(err.message)
-      throw new InternalServerErrorException()
-    }
+  init(): string {
+    return this.appService.init()
   }
 }

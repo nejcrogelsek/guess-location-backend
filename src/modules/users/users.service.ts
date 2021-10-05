@@ -12,6 +12,7 @@ import * as AWS from 'aws-sdk'
 import { randomBytes } from 'crypto'
 import * as bcrypt from 'bcrypt'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { Response } from 'express'
 
 @Injectable()
 export class UsersService {
@@ -42,16 +43,6 @@ export class UsersService {
     return found
   }
 
-  async findByEmail(email: string): Promise<User> {
-    const found = await this.usersRepository.findOne({ email: email })
-
-    if (!found) {
-      throw new NotFoundException(`User with email: ${email} was not found.`)
-    }
-
-    return found
-  }
-
   async deleteUser(id: number): Promise<User> {
     try {
       const user: User = await this.findById(id)
@@ -61,21 +52,6 @@ export class UsersService {
       throw new BadRequestException(`Cannot delete a user with id: ${id}`)
     } finally {
       this.logger.log(`Deleting a user with id: ${id}`)
-    }
-  }
-
-  async verifyEmail(reqUser: User) {
-    try {
-      const user: User = await this.findById(reqUser.id)
-      user.confirmed = true
-      await this.usersRepository.save(user)
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException(
-        `Cannot verify a user with id: ${reqUser.id}`
-      )
-    } finally {
-      this.logger.log(`Verifying a user with id: ${reqUser.id}`)
     }
   }
 
@@ -106,25 +82,26 @@ export class UsersService {
       return uploadURL
     } catch (err) {
       console.log(err)
-    }
+	  throw new BadRequestException()
+    } finally{
+		this.logger.log('Getting a random user upload url from backend.')
+	}
+  }
+
+  async uploadFile(res: Response) {
+    try {
+      const url = await this.generateUploadUrl()
+      res.send({ url })
+    } catch (err) {
+      console.log(err.message)
+      throw new BadRequestException()
+    } finally{
+		this.logger.log('Uploading a user profile picture.')
+	}
   }
 
   async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
     try {
-      if (updateUserDto.email !== undefined) {
-        const user = await this.usersRepository.findOne({
-          email: updateUserDto.email
-        })
-        if (
-          user &&
-          user.id !== updateUserDto.id &&
-          updateUserDto.email === user.email
-        ) {
-          throw new BadRequestException(
-            `User with email: ${updateUserDto.email} already exists.`
-          )
-        }
-      }
       const user = await this.findById(updateUserDto.id)
       const salt = await bcrypt.genSalt(10)
       if (updateUserDto.password) {
@@ -141,9 +118,6 @@ export class UsersService {
         }
       }
 
-      if (updateUserDto.email) {
-        user.email = updateUserDto.email
-      }
       if (updateUserDto.first_name) {
         user.first_name = updateUserDto.first_name
       }

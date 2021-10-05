@@ -43,7 +43,6 @@ export class User {
   @Column({ default: false })
   confirmed: boolean
 
-  @ApiProperty({isArray: true})
   @OneToMany(() => Place, (place) => place.place)
   places: Place[]
 

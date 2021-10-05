@@ -8,13 +8,11 @@ import {
   UseGuards
 } from '@nestjs/common'
 import {
-  IAuthReturnData,
-  IUserDataFromToken
+  IAuthReturnData
 } from '../../interfaces/auth.interface'
 import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
-import { JwtAuthGuard } from './auth-jwt.guard'
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -58,13 +56,5 @@ export class AuthController {
   @Get('/verify-email')
   verifyEmail(@Req() req, @Res() res) {
     return this.authService.verifyEmail(req, res)
-  }
-
-  @ApiCreatedResponse({ description: 'API for protected routes which return user data if user is authenticated.' })
-  @ApiBadRequestResponse()
-  @UseGuards(JwtAuthGuard)
-  @Get('protected')
-  me(@Req() req): Promise<IUserDataFromToken> {
-    return this.authService.me(req)
   }
 }

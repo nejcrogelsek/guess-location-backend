@@ -1,22 +1,24 @@
+import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
+import * as request from 'supertest'
+import { AppModule } from './app.module'
 
 describe('AppController', () => {
-  let appController: AppController
+  let app: INestApplication
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService]
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule]
     }).compile()
 
-    appController = app.get<AppController>(AppController)
+    app = moduleFixture.createNestApplication()
+    await app.init()
   })
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!')
-    })
+  it('should return string', async () => {
+    await request(app.getHttpServer())
+      .get('/')
+      .expect('This is NestJS API for project Geotagger.')
+      .expect(200)
   })
 })

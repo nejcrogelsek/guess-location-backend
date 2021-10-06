@@ -11,7 +11,7 @@ import { LoginUserDto } from './dto/login-user.dto'
 import { IUser } from '../../interfaces/user.interface'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 
-describe('UsersController (e2e)', () => {
+describe('AuthController (e2e)', () => {
   let app: INestApplication
   let jwt: string
   let user: IUser

@@ -1,9 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional
-} from 'class-validator'
+import { IsNotEmpty, IsNumber, IsOptional, Matches } from 'class-validator'
 
 export class UpdateUserDto {
   @ApiProperty()
@@ -25,5 +21,6 @@ export class UpdateUserDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/)
   password: string
 }

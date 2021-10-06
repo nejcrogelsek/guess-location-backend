@@ -130,7 +130,7 @@ export class AuthService {
         text: `
 			   Hello, thanks for registering on our site.
 			   Please copy and paste the address below to verify your account.
-			   http://localhost:3000/verify-email?token=${createdUser.email_token}
+			   http://localhost:3000/auth/verify-email?token=${createdUser.email_token}
 			`,
         html: `
 				<h1>Hello</h1>
@@ -140,11 +140,6 @@ export class AuthService {
 			`
       }
       await sgMail.send(msg)
-      //   req.flash(
-      //     'success',
-      //     'Thanks for registering. Please check your email to verify your account.'
-      //   )
-      //   res.redirect('/')
       console.log(
         'Thanks for registering. Please check your email to verify your account.'
       )
@@ -181,6 +176,9 @@ export class AuthService {
       user.email_token = null
       user.confirmed = true
       await this.usersRepository.save(user)
+
+	  // Redirect to frontend login page -- maybe setSuccess('Your email successfully validated. Now you can login.')
+	  console.log('RESPONSE: ', req.get('host'))
     } catch (err) {
       console.log(err)
       throw new UnauthorizedException(

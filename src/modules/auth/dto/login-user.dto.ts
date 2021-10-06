@@ -10,5 +10,6 @@ export class LoginUserDto {
   @ApiProperty()
   @IsNotEmpty()
   @MinLength(6)
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/)
   password: string
 }

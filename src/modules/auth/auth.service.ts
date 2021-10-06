@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
 import {
@@ -15,6 +20,7 @@ import * as sgMail from '@sendgrid/mail'
 import { randomBytes } from 'crypto'
 import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
+import { Request, Response } from 'express'
 
 @Injectable()
 export class AuthService {
@@ -25,7 +31,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService
   ) {
-    
+    sgMail.setApiKey(configService.get('SENDGRID_API_KEY'))
   }
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -65,9 +71,9 @@ export class AuthService {
       const user = await this.usersRepository.findOne({
         email: loginUserDto.username
       })
-      // if (!user.confirmed) {
-      //   throw new UnauthorizedException('Please confirm your email to login.')
-      // }
+      if (!user.confirmed) {
+        throw new UnauthorizedException('Please confirm your email to login.')
+      }
       const { access_token } = await this.getAccessToken(user)
       const { id, email, first_name, last_name, profile_image, confirmed } =
         user
@@ -77,7 +83,8 @@ export class AuthService {
           email,
           first_name,
           last_name,
-          profile_image
+          profile_image,
+          confirmed
         },
         access_token
       }
@@ -113,9 +120,34 @@ export class AuthService {
 
       const { access_token } = await this.getAccessToken(savedUser)
 
-      const { id, email, first_name, last_name, profile_image } = savedUser
+      const { id, email, first_name, last_name, profile_image, confirmed } =
+        savedUser
 
-     
+      const msg = {
+        from: 'nejcrogelsek0@gmail.com',
+        to: createUserDto.email,
+        subject: 'Geotagger project - verify your email',
+        text: `
+			   Hello, thanks for registering on our site.
+			   Please copy and paste the address below to verify your account.
+			   http://localhost:3000/verify-email?token=${createdUser.email_token}
+			`,
+        html: `
+				<h1>Hello</h1>
+				<p>Thanks for registering on our site.</p>
+				<p>Please click on the link below to verify your account.</p>
+				<a href='http://localhost:3000/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
+			`
+      }
+      await sgMail.send(msg)
+      //   req.flash(
+      //     'success',
+      //     'Thanks for registering. Please check your email to verify your account.'
+      //   )
+      //   res.redirect('/')
+      console.log(
+        'Thanks for registering. Please check your email to verify your account.'
+      )
 
       return {
         user: {
@@ -123,7 +155,8 @@ export class AuthService {
           email,
           first_name,
           last_name,
-          profile_image
+          profile_image,
+          confirmed
         },
         access_token
       }
@@ -135,30 +168,24 @@ export class AuthService {
     }
   }
 
-  async verifyEmail(req, res) {
+  async verifyEmail(req: Request, res: Response) {
     try {
       const user = await this.usersRepository.findOne({
-        email_token: req.query.token
+        email_token: req.query.token.toString()
       })
       if (!user) {
-        req.flash(
-          'error',
+        throw new BadRequestException(
           'Token is invalid. Please contact us for assistance.'
         )
-        return res.redirect('/')
       }
       user.email_token = null
       user.confirmed = true
       await this.usersRepository.save(user)
-      await req.login(user, async (err) => {
-        if (err) return err
-        req.flash('success', `Welcome to Geotagger project ${user.email}`)
-        res.redirect('/')
-      })
     } catch (err) {
       console.log(err)
-      req.flash('error', 'Token is invalid. Please contact us for assistance.')
-      res.redirect('/')
+      throw new UnauthorizedException(
+        'Token is invalid. Please contact us for assistance.'
+      )
     } finally {
       this.logger.log('Verifing email address')
     }
@@ -188,7 +215,8 @@ export class AuthService {
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
-        profile_image: user.profile_image
+        profile_image: user.profile_image,
+        confirmed: user.confirmed
       }
     } catch (err) {
       console.log(err.message)

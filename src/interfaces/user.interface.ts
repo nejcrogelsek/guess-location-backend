@@ -4,6 +4,7 @@ export interface IUser {
   first_name: string
   last_name: string
   profile_image: string
+  confirmed: boolean
   password: string
   created_at: Date
   updated_at: Date
@@ -14,4 +15,5 @@ export type IUserData = {
   first_name: string
   last_name: string
   profile_image: string
+  confirmed: boolean
 }

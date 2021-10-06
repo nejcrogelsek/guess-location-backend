@@ -5,6 +5,7 @@ export type IAuthReturnData = {
     first_name: string
     last_name: string
     profile_image: string
+	confirmed: boolean
   }
   access_token: string
 }
@@ -15,6 +16,7 @@ export interface IUserDataFromToken {
   first_name: string
   last_name: string
   profile_image: string
+  confirmed: boolean
 }
 export interface IRefreshTokenData {
   name: string

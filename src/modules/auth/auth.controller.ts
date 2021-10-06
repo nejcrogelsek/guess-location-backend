@@ -23,6 +23,7 @@ import { User } from '../../entities/user.entity'
 import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 import { JwtAuthGuard } from './auth-jwt.guard'
+import { Request, Response } from 'express'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -56,7 +57,7 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'API verify email address.' })
   @ApiBadRequestResponse()
   @Get('/verify-email')
-  verifyEmail(@Req() req, @Res() res) {
+  verifyEmail(@Req() req: Request, @Res() res: Response) {
     return this.authService.verifyEmail(req, res)
   }
 

@@ -45,7 +45,7 @@ export class UsersController {
 
   @ApiCreatedResponse({ type: User })
   @ApiBadRequestResponse()
-  @Patch('me/update')
+  @Patch('/me/update')
   updateUser(@Body() body: UpdateUserDto): Promise<User> {
     return this.usersService.updateUser(body)
   }

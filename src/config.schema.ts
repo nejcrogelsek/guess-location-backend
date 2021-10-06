@@ -11,5 +11,6 @@ export const configValidationSchema = Joi.object({
   AWS_BUCKET_REGION: Joi.string().required(),
   AWS_ACCESS_KEY_ID: Joi.string().required(),
   AWS_SECRET_ACCESS_KEY: Joi.string().required(),
-  JWT_SECRET: Joi.string().required()
+  JWT_SECRET: Joi.string().required(),
+  SENDGRID_API_KEY: Joi.string().required(),
 })

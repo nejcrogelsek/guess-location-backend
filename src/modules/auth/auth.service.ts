@@ -15,6 +15,7 @@ import * as sgMail from '@sendgrid/mail'
 import { randomBytes } from 'crypto'
 import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
+
 @Injectable()
 export class AuthService {
   private logger = new Logger()
@@ -24,7 +25,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService
   ) {
-    sgMail.setApiKey(configService.get('SENDGRID_API_KEY'))
+    
   }
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -108,30 +109,13 @@ export class AuthService {
         password: hashedPassword
       })
 
-      //   const msg = {
-      //     from: 'noreply@gmail.com',
-      //     to: createUserDto.email,
-      //     subject: 'Geotagger project - verify your email',
-      //     text: `
-      // 	 	Hello, thanks for registering on our site.
-      // 		 Please copy and paste the address below to verify your account.
-      // 		 http://localhost:3000/verify-email?token=${createdUser.email_token}
-      // 	  `,
-      //     html: `
-      // 	 	 <h1>Hello</h1>
-      // 		  <p>Thanks for registering on our site.</p>
-      // 		  <p>Please click on the link below to verify your account.</p>
-      // 		  <a href='http://localhost:3000/verify-email?token=${createdUser.email_token}'>Verify your account</a>
-      // 	  `
-      //   }
-      //   await sgMail.send(msg)
-      //req.flash('success','Thanks for registering. Please check your email to verify your account.')
-      //res.redirect('/')
       const savedUser = await this.usersRepository.save(createdUser)
 
       const { access_token } = await this.getAccessToken(savedUser)
 
       const { id, email, first_name, last_name, profile_image } = savedUser
+
+     
 
       return {
         user: {

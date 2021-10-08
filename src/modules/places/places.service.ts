@@ -42,14 +42,7 @@ export class PlacesService {
           id: guesses[i].location_id
         })
         result.push({
-          location: {
-            id: l.id,
-            lat: l.lat,
-            long: l.long,
-            city: l.city,
-            location_image: l.location_image,
-            user_id: l.user_id
-          },
+          location: l,
           distance: guesses[i].distance
         })
       }

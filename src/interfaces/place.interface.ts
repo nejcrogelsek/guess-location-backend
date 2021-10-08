@@ -6,6 +6,8 @@ export interface IPersonalBest {
     city: string
     location_image: string
     user_id: number
+    created_at: Date
+    updated_at: Date
   }
   distance: number
 }

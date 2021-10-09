@@ -17,12 +17,19 @@ export class PlacesService {
     @InjectRepository(Guess) private guessRepository: Repository<Guess>
   ) {}
 
-  async getRecent(): Promise<Place[]> {
+  async getRecent(id: number): Promise<Place[]> {
     try {
-      return this.placesRepository.find({
+      const result: Place[] = []
+      const places: Place[] = await this.placesRepository.find({
         order: { updated_at: 'DESC' },
         relations: ['guesses']
       })
+      places.forEach((p) => {
+        if (p.user_id !== id) {
+          result.push(p)
+        }
+      })
+      return result
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException(

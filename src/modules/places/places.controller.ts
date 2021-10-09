@@ -5,7 +5,8 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Post
+  Post,
+  UseGuards
 } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
@@ -16,6 +17,7 @@ import {
 import { Guess } from '../../entities/guess.entity'
 import { Place } from '../../entities/place.entity'
 import { IPersonalBest } from '../../interfaces/place.interface'
+import { JwtAuthGuard } from '../auth/auth-jwt.guard'
 import { CreateGuessDto } from './dto/create-guess.dto'
 import { CreateLocationDto } from './dto/create-location.dto'
 import { PlacesService } from './places.service'
@@ -27,9 +29,9 @@ export class PlacesController {
 
   @ApiOkResponse({ type: Place, isArray: true })
   @ApiBadRequestResponse()
-  @Get()
-  getRecent(): Promise<Place[]> {
-    return this.placesService.getRecent()
+  @Get('/:id')
+  getRecent(@Param('id',ParseIntPipe) id:number): Promise<Place[]> {
+    return this.placesService.getRecent(id)
   }
 
   @ApiOkResponse({ type: Place, isArray: true })

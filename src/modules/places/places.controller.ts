@@ -29,6 +29,15 @@ export class PlacesController {
 
   @ApiOkResponse({ type: Place, isArray: true })
   @ApiBadRequestResponse()
+  @Get('/all')
+  getAll(): Promise<Place[]> {
+    return this.placesService.getAll()
+  }
+
+
+  @ApiOkResponse({ type: Place, isArray: true })
+  @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
   getRecent(@Param('id',ParseIntPipe) id:number): Promise<Place[]> {
     return this.placesService.getRecent(id)
@@ -36,6 +45,7 @@ export class PlacesController {
 
   @ApiOkResponse({ type: Place, isArray: true })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Get('/best/:id')
   getPersonalBest(
     @Param('id', ParseIntPipe) id: number
@@ -45,6 +55,7 @@ export class PlacesController {
 
   @ApiOkResponse({ type: Place })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Get('/random')
   getRandom(): Promise<Place> {
     return this.placesService.getRandom()
@@ -52,6 +63,7 @@ export class PlacesController {
 
   @ApiCreatedResponse({ type: Place })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Post()
   createLocation(@Body() body: CreateLocationDto): Promise<Place> {
     return this.placesService.createLocation(body)
@@ -86,6 +98,7 @@ export class PlacesController {
 
   @ApiCreatedResponse({ type: Guess })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Post('/guess/:id')
   guessLocation(@Body() body: CreateGuessDto): Promise<Guess> {
     return this.placesService.guessLocation(body)

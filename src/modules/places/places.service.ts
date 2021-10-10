@@ -17,6 +17,22 @@ export class PlacesService {
     @InjectRepository(Guess) private guessRepository: Repository<Guess>
   ) {}
 
+  async getAll(): Promise<Place[]> {
+    try {
+      return this.placesRepository.find({
+        order: { updated_at: 'DESC' },
+        relations: ['guesses']
+      })
+    } catch (err) {
+      console.log(err.message)
+      throw new BadRequestException(
+        'Error while searching for all locations.'
+      )
+    } finally {
+      this.logger.log('Searching for all locations.')
+    }
+  }
+
   async getRecent(id: number): Promise<Place[]> {
     try {
       const result: Place[] = []

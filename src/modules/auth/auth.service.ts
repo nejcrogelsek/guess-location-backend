@@ -124,9 +124,12 @@ export class AuthService {
         savedUser
 
       const msg = {
-        from: 'nejcrogelsek0@gmail.com',
+        from: {
+			name: 'Geotagger',
+			email: 'nejcrogelsek0@gmail.com'
+		},
         to: createUserDto.email,
-        subject: 'Geotagger project - verify your email',
+        subject: 'Geotagger - verify your email',
         text: `
 			   Hello, thanks for registering on our site.
 			   Please copy and paste the address below to verify your account.
@@ -179,6 +182,7 @@ export class AuthService {
 
 	  // Redirect to frontend login page -- maybe setSuccess('Your email successfully validated. Now you can login.')
 	  console.log('RESPONSE: ', req.get('host'))
+	  res.redirect('http://localhost:3001/login?message="Your email successfully validated. Now you can login."')
     } catch (err) {
       console.log(err)
       throw new UnauthorizedException(

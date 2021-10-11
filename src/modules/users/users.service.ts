@@ -82,10 +82,10 @@ export class UsersService {
       return uploadURL
     } catch (err) {
       console.log(err)
-	  throw new BadRequestException()
-    } finally{
-		this.logger.log('Getting a random user upload url from backend.')
-	}
+      throw new BadRequestException()
+    } finally {
+      this.logger.log('Getting a random user upload url from backend.')
+    }
   }
 
   async uploadFile(res: Response) {
@@ -95,27 +95,22 @@ export class UsersService {
     } catch (err) {
       console.log(err.message)
       throw new BadRequestException()
-    } finally{
-		this.logger.log('Uploading a user profile picture.')
-	}
+    } finally {
+      this.logger.log('Uploading a user profile picture.')
+    }
   }
 
   async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
     try {
       const user = await this.findById(updateUserDto.id)
-      const salt = await bcrypt.genSalt(10)
+
       if (updateUserDto.password) {
-        if (updateUserDto.password.length >= 6) {
-          const hashedPassword: string = await bcrypt.hash(
-            updateUserDto.password,
-            salt
-          )
-          user.password = hashedPassword
-        } else {
-          throw new BadRequestException(
-            'Password must be equal or longer than 6 characters.'
-          )
-        }
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword: string = await bcrypt.hash(
+          updateUserDto.password,
+          salt
+        )
+        user.password = hashedPassword
       }
 
       if (updateUserDto.first_name) {

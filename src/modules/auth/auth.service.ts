@@ -29,7 +29,7 @@ export class AuthService {
     @InjectRepository(User) private usersRepository: Repository<User>,
     private usersService: UsersService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    configService: ConfigService
   ) {
     sgMail.setApiKey(configService.get('SENDGRID_API_KEY'))
   }

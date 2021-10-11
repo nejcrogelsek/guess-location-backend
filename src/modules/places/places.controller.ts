@@ -34,6 +34,13 @@ export class PlacesController {
     return this.placesService.getAll()
   }
 
+  @ApiOkResponse({ type: Guess })
+  @ApiBadRequestResponse()
+  @Get('/guesses')
+  getGuesses(): Promise<Guess[]> {
+    return this.placesService.getGuesses()
+  }
+
 
   @ApiOkResponse({ type: Place, isArray: true })
   @ApiBadRequestResponse()
@@ -72,13 +79,6 @@ export class PlacesController {
   @Delete('/:id')
   deleteLocation(@Param('id', ParseIntPipe) id: number): Promise<Place> {
     return this.placesService.deleteLocation(id)
-  }
-
-  @ApiOkResponse({ type: Guess })
-  @ApiBadRequestResponse()
-  @Get('/guesses')
-  getGuesses(): Promise<Guess[]> {
-    return this.placesService.getGuesses()
   }
 
   @ApiOkResponse({ type: Guess })

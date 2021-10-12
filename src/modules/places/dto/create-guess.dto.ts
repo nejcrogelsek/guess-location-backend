@@ -5,11 +5,6 @@ export class CreateGuessDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  user_id: number
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
   location_id: number
 
   @ApiProperty()

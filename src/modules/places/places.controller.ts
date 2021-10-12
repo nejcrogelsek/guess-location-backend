@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Req,
   UseGuards
 } from '@nestjs/common'
 import {
@@ -41,13 +42,19 @@ export class PlacesController {
     return this.placesService.getGuesses()
   }
 
+  @ApiOkResponse({ type: Place })
+  @ApiBadRequestResponse()
+  @Get('/random')
+  getRandom(): Promise<Place> {
+    return this.placesService.getRandom()
+  }
 
   @ApiOkResponse({ type: Place, isArray: true })
   @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
-  getRecent(@Param('id',ParseIntPipe) id:number): Promise<Place[]> {
-    return this.placesService.getRecent(id)
+  getRecent(@Req() req,@Param('id', ParseIntPipe) id: number): Promise<Place[]> {
+    return this.placesService.getRecent(id,req.user.sub)
   }
 
   @ApiOkResponse({ type: Place, isArray: true })
@@ -55,34 +62,32 @@ export class PlacesController {
   @UseGuards(JwtAuthGuard)
   @Get('/best/:id')
   getPersonalBest(
+	  @Req() req,
     @Param('id', ParseIntPipe) id: number
   ): Promise<IPersonalBest[]> {
-    return this.placesService.getPersonalBest(id)
-  }
-
-  @ApiOkResponse({ type: Place })
-  @ApiBadRequestResponse()
-  @UseGuards(JwtAuthGuard)
-  @Get('/random')
-  getRandom(): Promise<Place> {
-    return this.placesService.getRandom()
+    return this.placesService.getPersonalBest(id,req.user.sub)
   }
 
   @ApiCreatedResponse({ type: Place })
   @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Post()
-  createLocation(@Body() body: CreateLocationDto): Promise<Place> {
-    return this.placesService.createLocation(body)
+  createLocation(@Req() req, @Body() body: CreateLocationDto): Promise<Place> {
+    return this.placesService.createLocation(body, req.user.sub)
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
-  deleteLocation(@Param('id', ParseIntPipe) id: number): Promise<Place> {
-    return this.placesService.deleteLocation(id)
+  deleteLocation(
+    @Req() req,
+    @Param('id', ParseIntPipe) id_param: number
+  ): Promise<Place> {
+    return this.placesService.deleteLocation(id_param, req.user.sub)
   }
 
   @ApiOkResponse({ type: Guess })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Get('/:id/user/:user_id')
   getUserGuess(
     @Param('id', ParseIntPipe) location_id: number,
@@ -91,16 +96,20 @@ export class PlacesController {
     return this.placesService.getUserGuess({ location_id, user_id })
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/guess/:id')
-  deleteGuess(@Param('id', ParseIntPipe) id: number): Promise<Guess> {
-    return this.placesService.deleteGuess(id)
+  deleteGuess(
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Guess> {
+    return this.placesService.deleteGuess(id, req.user.sub)
   }
 
   @ApiCreatedResponse({ type: Guess })
   @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Post('/guess/:id')
-  guessLocation(@Body() body: CreateGuessDto): Promise<Guess> {
-    return this.placesService.guessLocation(body)
+  guessLocation(@Req() req, @Body() body: CreateGuessDto): Promise<Guess> {
+    return this.placesService.guessLocation(body, req.user.sub)
   }
 }

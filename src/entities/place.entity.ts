@@ -1,22 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from 'typeorm'
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm'
+import { BaseEntity } from './base'
 import { Guess } from './guess.entity'
 import { User } from './user.entity'
 
 @Entity()
-export class Place {
-  @ApiProperty()
-  @PrimaryGeneratedColumn()
-  id: number
-
+export class Place extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'real' })
   lat: string
@@ -43,12 +32,4 @@ export class Place {
   @ApiProperty({ isArray: true })
   @OneToMany(() => Guess, (guess) => guess.guess)
   guesses: Guess[]
-
-  @ApiProperty()
-  @CreateDateColumn()
-  created_at: Date
-
-  @ApiProperty()
-  @UpdateDateColumn()
-  updated_at: Date
 }

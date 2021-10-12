@@ -194,9 +194,13 @@ export class AuthService {
   }
 
   async refreshToken(
-    payload: GetRefreshTokenDto
+    payload: GetRefreshTokenDto,
+    user_id: number
   ): Promise<{ access_token: string }> {
     try {
+      if (payload.sub !== user_id) {
+        throw Error
+      }
       const access_token = this.jwtService.sign(payload)
       return {
         access_token

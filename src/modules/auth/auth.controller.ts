@@ -43,20 +43,22 @@ export class AuthController {
     return this.authService.register(body)
   }
 
-  @ApiCreatedResponse({ description: 'API request refresh token.' })
-  @ApiBadRequestResponse()
-  @Post('refresh-token')
-  refreshToken(
-    @Body() body: GetRefreshTokenDto
-  ): Promise<{ access_token: string }> {
-    return this.authService.refreshToken(body)
-  }
-
   @ApiCreatedResponse({ description: 'API verify email address.' })
   @ApiBadRequestResponse()
   @Get('/verify-email')
   verifyEmail(@Req() req: Request, @Res() res: Response) {
     return this.authService.verifyEmail(req, res)
+  }
+
+  @ApiCreatedResponse({ description: 'API request refresh token.' })
+  @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
+  @Post('refresh-token')
+  refreshToken(
+    @Req() req,
+    @Body() body: GetRefreshTokenDto
+  ): Promise<{ access_token: string }> {
+    return this.authService.refreshToken(body, req.user.sub)
   }
 
   @ApiCreatedResponse({

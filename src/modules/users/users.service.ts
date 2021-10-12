@@ -43,8 +43,11 @@ export class UsersService {
     return found
   }
 
-  async deleteUser(id: number): Promise<User> {
+  async deleteUser(id: number, user_id: number): Promise<User> {
     try {
+      if (id !== user_id) {
+        throw Error
+      }
       const user: User = await this.findById(id)
       return this.usersRepository.remove(user)
     } catch (err) {
@@ -100,9 +103,15 @@ export class UsersService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
+  async updateUser(
+    updateUserDto: UpdateUserDto,
+    user_id: number
+  ): Promise<User> {
     try {
-      const user = await this.findById(updateUserDto.id)
+      if (updateUserDto.id !== user_id) {
+        throw Error
+      }
+      const user = await this.findById(user_id)
 
       if (updateUserDto.password) {
         const salt = await bcrypt.genSalt(10)

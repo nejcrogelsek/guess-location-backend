@@ -6,7 +6,9 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Res
+  Req,
+  Res,
+  UseGuards
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -18,6 +20,7 @@ import {
 import { User } from '../../entities/user.entity'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { JwtAuthGuard } from '../auth/auth-jwt.guard'
 
 @ApiTags('users')
 @Controller('users')
@@ -33,11 +36,13 @@ export class UsersController {
 
   @ApiOkResponse({ type: User })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
-  deleteUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    return this.usersService.deleteUser(id)
+  deleteUser(@Req() req, @Param('id', ParseIntPipe) id: number): Promise<User> {
+    return this.usersService.deleteUser(id, req.user.sub)
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('upload')
   uploadFile(@Res() res: Response) {
     return this.usersService.uploadFile(res)
@@ -45,8 +50,9 @@ export class UsersController {
 
   @ApiCreatedResponse({ type: User })
   @ApiBadRequestResponse()
+  @UseGuards(JwtAuthGuard)
   @Patch('/me/update')
-  updateUser(@Body() body: UpdateUserDto): Promise<User> {
-    return this.usersService.updateUser(body)
+  updateUser(@Req() req, @Body() body: UpdateUserDto): Promise<User> {
+    return this.usersService.updateUser(body, req.user.sub)
   }
 }

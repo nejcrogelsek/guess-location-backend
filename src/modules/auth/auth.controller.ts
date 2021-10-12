@@ -7,10 +7,7 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common'
-import {
-  IAuthReturnData,
-  IUserDataFromToken
-} from '../../interfaces/auth.interface'
+import { IAuthReturnData } from '../../interfaces/auth.interface'
 import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
@@ -24,6 +21,7 @@ import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 import { JwtAuthGuard } from './auth-jwt.guard'
 import { Request, Response } from 'express'
+import { IUserData } from '../../interfaces/user.interface'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -68,7 +66,7 @@ export class AuthController {
   @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Get('protected')
-  me(@Req() req): Promise<IUserDataFromToken> {
+  me(@Req() req): Promise<IUserData> {
     return this.authService.me(req)
   }
 }

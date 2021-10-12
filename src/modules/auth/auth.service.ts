@@ -6,10 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
-import {
-  IAuthReturnData,
-  IUserDataFromToken
-} from '../../interfaces/auth.interface'
+import { IAuthReturnData } from '../../interfaces/auth.interface'
 import { Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import * as bcrypt from 'bcrypt'
@@ -21,6 +18,7 @@ import { randomBytes } from 'crypto'
 import { LoginUserDto } from './dto/login-user.dto'
 import { GetRefreshTokenDto } from './dto/get-refresh-token.dto'
 import { Request, Response } from 'express'
+import { IUserData } from '../../interfaces/user.interface'
 
 @Injectable()
 export class AuthService {
@@ -125,9 +123,9 @@ export class AuthService {
 
       const msg = {
         from: {
-			name: 'Geotagger',
-			email: 'nejcrogelsek0@gmail.com'
-		},
+          name: 'Geotagger',
+          email: 'nejcrogelsek0@gmail.com'
+        },
         to: createUserDto.email,
         subject: 'Geotagger - verify your email',
         text: `
@@ -180,9 +178,11 @@ export class AuthService {
       user.confirmed = true
       await this.usersRepository.save(user)
 
-	  // Redirect to frontend login page -- maybe setSuccess('Your email successfully validated. Now you can login.')
-	  console.log('RESPONSE: ', req.get('host'))
-	  res.redirect('http://localhost:3001/login?message="Your email successfully validated. Now you can login."')
+      // Redirect to frontend login page -- maybe setSuccess('Your email successfully validated. Now you can login.')
+      console.log('RESPONSE: ', req.get('host'))
+      res.redirect(
+        'http://localhost:3001/login?message="Your email successfully validated. Now you can login."'
+      )
     } catch (err) {
       console.log(err)
       throw new UnauthorizedException(
@@ -209,7 +209,7 @@ export class AuthService {
     }
   }
 
-  async me(req): Promise<IUserDataFromToken> {
+  async me(req): Promise<IUserData> {
     try {
       const user = await this.usersService.findById(req.user.id)
       return {

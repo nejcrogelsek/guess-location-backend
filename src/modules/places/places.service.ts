@@ -84,7 +84,7 @@ export class PlacesService {
       result.sort(({ distance: a }, { distance: b }) => a - b)
       return result.slice(0, 3)
     } catch (err) {
-      console.log(err.message)
+      console.log(err)
       throw new BadRequestException(
         'Error while searching for personal best results.'
       )

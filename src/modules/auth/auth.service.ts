@@ -210,7 +210,7 @@ export class AuthService {
 
   async me(req): Promise<IUserData> {
     try {
-      const user = await this.usersService.findById(req.user.id)
+      const user = await this.usersService.findById(req.user.sub)
       return {
         id: user.id,
         email: user.email,

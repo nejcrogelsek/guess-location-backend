@@ -42,7 +42,6 @@ export class UsersController {
     return this.usersService.deleteUser(id, req.user.sub)
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('upload')
   uploadFile(@Res() res: Response) {
     return this.usersService.uploadFile(res)

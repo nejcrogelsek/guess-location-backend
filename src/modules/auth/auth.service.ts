@@ -141,9 +141,6 @@ export class AuthService {
 			`
       }
       await sgMail.send(msg)
-      console.log(
-        'Thanks for registering. Please check your email to verify your account.'
-      )
 
       return {
         user: {
@@ -178,8 +175,6 @@ export class AuthService {
       user.confirmed = true
       await this.usersRepository.save(user)
 
-      // Redirect to frontend login page -- maybe setSuccess('Your email successfully validated. Now you can login.')
-      console.log('RESPONSE: ', req.get('host'))
       res.redirect(
         'http://localhost:3001/login?message="Your email successfully validated. Now you can login."'
       )

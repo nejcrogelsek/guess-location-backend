@@ -86,11 +86,17 @@ describe('AuthController (e2e)', () => {
             email: 'mockuser@gmail.com',
             first_name: 'Mock',
             last_name: 'User',
-            profile_image: 'undefined'
+            profile_image: 'undefined',
+            confirmed: false
           },
           access_token: expect.any(String)
         })
       })
+  })
+
+  it('/auth/verify-email (GET)', async () => {
+    await request(app.getHttpServer())
+      .get('/auth/verify-email')
   })
 
   it('/auth/login (POST)', async () => {
@@ -126,7 +132,8 @@ describe('AuthController (e2e)', () => {
     }
     await request(app.getHttpServer())
       .post('/auth/refresh-token')
-      .expect('Content-Type', /json/)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .send(dto)
       .expect(201)
       .then((res) => {

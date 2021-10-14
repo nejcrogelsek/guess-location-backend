@@ -70,9 +70,9 @@ describe('PlacesController (e2e)', () => {
     return conn.close()
   })
 
-  it('/location (GET)', async () => {
+  it('/location/:id (GET)', async () => {
     await request(app.getHttpServer())
-      .get('/location')
+      .get(`/location/${user.id}`)
       .expect('Content-Type', /json/)
       .expect(200)
   })
@@ -93,7 +93,6 @@ describe('PlacesController (e2e)', () => {
 
   it('/location (POST)', async () => {
     const dto: CreateLocationDto = {
-      user_id: user.id,
       lat: '46.51028',
       long: '15.08056',
       address: 'Ljubljana',
@@ -133,7 +132,6 @@ describe('PlacesController (e2e)', () => {
 
   it('/location/guess/:id (POST)', async () => {
     const dto: CreateGuessDto = {
-      user_id: user.id,
       location_id: location.id,
       distance: 1000,
       address: 'Unknown location'

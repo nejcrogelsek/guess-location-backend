@@ -39,8 +39,8 @@ export class AuthController {
   @ApiCreatedResponse({ type: User, description: 'API register user.' })
   @ApiBadRequestResponse()
   @Post('register')
-  register(@Body() body: CreateUserDto): Promise<IAuthReturnData> {
-    return this.authService.register(body)
+  register(@Req() req,@Body() body: CreateUserDto): Promise<IAuthReturnData> {
+    return this.authService.register(body,req)
   }
 
   @ApiCreatedResponse({ description: 'API verify email address.' })

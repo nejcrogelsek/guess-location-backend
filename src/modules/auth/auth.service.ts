@@ -94,7 +94,7 @@ export class AuthService {
     }
   }
 
-  async register(createUserDto: CreateUserDto): Promise<IAuthReturnData> {
+  async register(createUserDto: CreateUserDto,request): Promise<IAuthReturnData> {
     try {
       const user = await this.usersRepository.findOne({
         email: createUserDto.email
@@ -137,7 +137,7 @@ export class AuthService {
 				<h1>Hello</h1>
 				<p>Thanks for registering on our site.</p>
 				<p>Please click on the link below to verify your account.</p>
-				<a href='http://localhost:3000/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
+				<a href='${request.protocol}://${request.host}:3000/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
 			`
       }
       await sgMail.send(msg)

@@ -1,4 +1,4 @@
-import { ConsoleLogger, INestApplication, ValidationPipe } from '@nestjs/common'
+import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { hashSync } from 'bcrypt'
 import * as request from 'supertest'
@@ -10,11 +10,13 @@ import { PlacesModule } from './places.module'
 import { UsersModule } from '../users/users.module'
 import { CreateLocationDto } from './dto/create-location.dto'
 import { CreateGuessDto } from './dto/create-guess.dto'
+import { LoginUserDto } from '../auth/dto/login-user.dto'
 
 describe('PlacesController (e2e)', () => {
   let app: INestApplication
   let location: Place
   let user: User
+  let jwt: string
   let guessId: number
 
   beforeAll(async () => {
@@ -34,7 +36,8 @@ describe('PlacesController (e2e)', () => {
       email: 'test@gmail.com',
       first_name: 'Test',
       last_name: 'User',
-      password: hashSync('Test123!', 10)
+      password: hashSync('Test123!', 10),
+	  confirmed: true
     })
     initialUser = await usersRepo.save(initialUser)
     user = initialUser
@@ -70,9 +73,37 @@ describe('PlacesController (e2e)', () => {
     return conn.close()
   })
 
+  it('/auth/login (POST)', async () => {
+    const dto: LoginUserDto = {
+      username: user.email,
+      password: 'Test123!'
+    }
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .expect('Content-Type', /json/)
+      .send(dto)
+      .expect(201)
+      .then((res) => {
+        expect(res.body).toEqual({
+          user: {
+            id: expect.any(Number),
+            email: 'test@gmail.com',
+            first_name: 'Test',
+            last_name: 'User',
+            profile_image: 'undefined',
+            confirmed: true
+          },
+          access_token: expect.any(String)
+        })
+        jwt = res.body.access_token
+      })
+  })
+
   it('/location/:id (GET)', async () => {
     await request(app.getHttpServer())
       .get(`/location/${user.id}`)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect('Content-Type', /json/)
       .expect(200)
   })
@@ -80,6 +111,8 @@ describe('PlacesController (e2e)', () => {
   it('/location/best/:id (GET)', async () => {
     await request(app.getHttpServer())
       .get(`/location/best/${user.id}`)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect('Content-Type', /json/)
       .expect(200)
   })
@@ -100,7 +133,9 @@ describe('PlacesController (e2e)', () => {
     }
     await request(app.getHttpServer())
       .post('/location')
-      .expect('Content-Type', /json/)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
+	  .expect('Content-Type', /json/)
       .send(dto)
       .expect(201)
       .then((res) => {
@@ -127,6 +162,8 @@ describe('PlacesController (e2e)', () => {
   it('/location/:id/user/:user_id (GET)', async () => {
     await request(app.getHttpServer())
       .get(`/location/${location.id}/user/${user.id}`)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect(200)
   })
 
@@ -139,8 +176,10 @@ describe('PlacesController (e2e)', () => {
 
     await request(app.getHttpServer())
       .post(`/location/guess/${location.id}`)
-      .expect('Content-Type', /json/)
-      .send(dto)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
+	  .send(dto) 
+	  .expect('Content-Type', /json/)
       .expect(201)
       .then((res) => {
         expect(res.body).toEqual({
@@ -153,13 +192,14 @@ describe('PlacesController (e2e)', () => {
           updated_at: expect.any(String)
         })
         guessId = res.body.id
-        console.log(guessId)
       })
   })
 
   it('/location/guess/:id (DELETE)', async () => {
     await request(app.getHttpServer())
       .delete(`/location/guess/${guessId}`)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {
@@ -177,6 +217,8 @@ describe('PlacesController (e2e)', () => {
   it('/location/:id (DELETE)', async () => {
     await request(app.getHttpServer())
       .delete(`/location/${location.id}`)
+	  .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {

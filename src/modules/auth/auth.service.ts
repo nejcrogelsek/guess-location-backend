@@ -94,7 +94,10 @@ export class AuthService {
     }
   }
 
-  async register(createUserDto: CreateUserDto,request): Promise<IAuthReturnData> {
+  async register(
+    createUserDto: CreateUserDto,
+    request
+  ): Promise<IAuthReturnData> {
     try {
       const user = await this.usersRepository.findOne({
         email: createUserDto.email

@@ -100,7 +100,6 @@ describe('AuthController (e2e)', () => {
   })
 
   it('/auth/login (POST)', async () => {
-    console.log(user)
     const dto: LoginUserDto = {
       username: user.email,
       password: 'Test123!'

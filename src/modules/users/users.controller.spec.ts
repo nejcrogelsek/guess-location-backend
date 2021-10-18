@@ -8,10 +8,12 @@ import { User } from '../../entities/user.entity'
 import { AppModule } from '../app.module'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { IUser } from '../../interfaces/user.interface'
+import { LoginUserDto } from '../auth/dto/login-user.dto'
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication
   let user: IUser
+  let jwt: string
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -30,7 +32,8 @@ describe('UsersController (e2e)', () => {
       email: 'test@gmail.com',
       first_name: 'Test',
       last_name: 'User',
-      password: hashSync('Test123!', 10)
+      password: hashSync('Test123!', 10),
+      confirmed: true
     })
     initialUser = await usersRepo.save(initialUser)
     user = initialUser
@@ -55,6 +58,32 @@ describe('UsersController (e2e)', () => {
     return conn.close()
   })
 
+  it('/auth/login (POST)', async () => {
+    const dto: LoginUserDto = {
+      username: user.email,
+      password: 'Test123!'
+    }
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .expect('Content-Type', /json/)
+      .send(dto)
+      .expect(201)
+      .then((res) => {
+        expect(res.body).toEqual({
+          user: {
+            id: expect.any(Number),
+            email: 'test@gmail.com',
+            first_name: 'Test',
+            last_name: 'User',
+            profile_image: 'undefined',
+            confirmed: true
+          },
+          access_token: expect.any(String)
+        })
+        jwt = res.body.access_token
+      })
+  })
+
   it('/users (GET)', async () => {
     await request(app.getHttpServer()).get('/users').expect(200)
   })
@@ -69,8 +98,10 @@ describe('UsersController (e2e)', () => {
     }
     await request(app.getHttpServer())
       .patch('/users/me/update')
-      .expect('Content-Type', /json/)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .send(dto)
+      .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {
         expect(res.body).toEqual({
@@ -80,7 +111,7 @@ describe('UsersController (e2e)', () => {
           last_name: 'Uporabnik',
           profile_image: expect.any(String),
           email_token: null,
-          confirmed: false,
+          confirmed: expect.any(Boolean),
           password: expect.any(String),
           created_at: expect.any(String),
           updated_at: expect.any(String)
@@ -103,6 +134,8 @@ describe('UsersController (e2e)', () => {
   it('/users/:id (DELETE)', async () => {
     await request(app.getHttpServer())
       .delete(`/users/${user.id}`)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .expect('Content-Type', /json/)
       .expect(200)
       .then((res) => {
@@ -113,7 +146,7 @@ describe('UsersController (e2e)', () => {
           profile_image: expect.any(String),
           password: expect.any(String),
           email_token: null,
-          confirmed: false,
+          confirmed: expect.any(Boolean),
           created_at: expect.any(String),
           updated_at: expect.any(String)
         })

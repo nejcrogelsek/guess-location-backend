@@ -204,11 +204,13 @@ export class PlacesService {
 
   async deleteLocation(id_param: number, user_id: number): Promise<Place> {
     try {
-      const l = await this.placesRepository.findOne(id_param)
+      const l = await this.placesRepository.findOne({ user_id: user_id })
       if (l.user_id !== user_id) {
         throw Error
       }
-      const location: Place = await this.placesRepository.findOne(user_id)
+      const location: Place = await this.placesRepository.findOne({
+        user_id: user_id
+      })
       return this.placesRepository.remove(location)
     } catch (err) {
       console.log(err)

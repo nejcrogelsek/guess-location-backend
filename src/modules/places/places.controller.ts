@@ -53,8 +53,11 @@ export class PlacesController {
   @ApiBadRequestResponse()
   @UseGuards(JwtAuthGuard)
   @Get('/:id')
-  getRecent(@Req() req,@Param('id', ParseIntPipe) id: number): Promise<Place[]> {
-    return this.placesService.getRecent(id,req.user.sub)
+  getRecent(
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<Place[]> {
+    return this.placesService.getRecent(id, req.user.sub)
   }
 
   @ApiOkResponse({ type: Place, isArray: true })
@@ -62,10 +65,10 @@ export class PlacesController {
   @UseGuards(JwtAuthGuard)
   @Get('/best/:id')
   getPersonalBest(
-	  @Req() req,
+    @Req() req,
     @Param('id', ParseIntPipe) id: number
   ): Promise<IPersonalBest[]> {
-    return this.placesService.getPersonalBest(id,req.user.sub)
+    return this.placesService.getPersonalBest(id, req.user.sub)
   }
 
   @ApiCreatedResponse({ type: Place })

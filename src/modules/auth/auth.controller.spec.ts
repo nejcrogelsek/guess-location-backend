@@ -27,7 +27,7 @@ describe('AuthController (e2e)', () => {
     await app.init()
 
     // DB interaction
-    const usersRepo = await getRepository(User)
+    const usersRepo = getRepository(User)
     let initialUser = usersRepo.create({
       profile_image: 'undefined',
       email: 'test@gmail.com',
@@ -56,13 +56,6 @@ describe('AuthController (e2e)', () => {
 
     const conn = getConnection()
     return conn.close()
-  })
-
-  it('/auth/register (POST) --> 400 on validation error', async () => {
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .expect('Content-Type', /json/)
-      .expect(400)
   })
 
   it('/auth/register (POST)', async () => {
@@ -94,15 +87,23 @@ describe('AuthController (e2e)', () => {
       })
   })
 
-  it('/auth/verify-email (GET)', async () => {
-    await request(app.getHttpServer())
-      .get('/auth/verify-email')
+  it('/auth/verify-email/?token=something (GET)', async () => {
+    await request(app.getHttpServer()).get(
+      `/auth/verify-email?token=${expect.any(String)}`
+    )
+    // DB interaction
+    const usersRepo = getRepository(User)
+    let confirmedUser = await usersRepo.findOne(user.id)
+    confirmedUser.confirmed = true
+    confirmedUser = await usersRepo.save(confirmedUser)
+    user = confirmedUser
   })
 
   it('/auth/login (POST)', async () => {
+    console.log(user)
     const dto: LoginUserDto = {
-      username: 'mockuser@gmail.com',
-      password: 'Mock123!'
+      username: user.email,
+      password: 'Test123!'
     }
     await request(app.getHttpServer())
       .post('/auth/login')
@@ -110,14 +111,14 @@ describe('AuthController (e2e)', () => {
       .send(dto)
       .expect(201)
       .then((res) => {
-        jwt = res.body.access_token
         expect(res.body).toEqual({
           user: {
             id: expect.any(Number),
-            email: 'mockuser@gmail.com',
-            first_name: 'Mock',
+            email: 'test@gmail.com',
+            first_name: 'Test',
             last_name: 'User',
-            profile_image: 'undefined'
+            profile_image: 'undefined',
+            confirmed: true
           },
           access_token: expect.any(String)
         })
@@ -132,7 +133,7 @@ describe('AuthController (e2e)', () => {
     }
     await request(app.getHttpServer())
       .post('/auth/refresh-token')
-	  .set('Content-Type', 'application/json')
+      .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${jwt}`)
       .send(dto)
       .expect(201)

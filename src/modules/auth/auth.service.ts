@@ -134,13 +134,13 @@ export class AuthService {
         text: `
 			   Hello, thanks for registering on our site.
 			   Please copy and paste the address below to verify your account.
-			   http://localhost:3000/auth/verify-email?token=${createdUser.email_token}
+			   http://localhost:8080/auth/verify-email?token=${createdUser.email_token}
 			`,
         html: `
 				<h1>Hello</h1>
 				<p>Thanks for registering on our site.</p>
 				<p>Please click on the link below to verify your account.</p>
-				<a href='${request.protocol}://${request.hostname}:3000/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
+				<a href='${request.protocol}://${request.hostname}:8080/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
 			`
       }
       await sgMail.send(msg)
@@ -179,7 +179,7 @@ export class AuthService {
       await this.usersRepository.save(user)
 
       res.redirect(
-        'http://localhost:3001/login?message="Your email successfully validated. Now you can login."'
+        'http://localhost:3000/login?message="Your email successfully validated. Now you can login."'
       )
     } catch (err) {
       console.log(err)

@@ -43,7 +43,7 @@ export class UsersController {
   }
 
   @Get('upload')
-  uploadFile(@Res() res: Response) {
+  uploadFile(@Res() res: Response): Promise<void> {
     return this.usersService.uploadFile(res)
   }
 

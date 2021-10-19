@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
-import { IAuthReturnData } from '../../interfaces/auth.interface'
+import { IAccessToken, IAuthReturnData } from '../../interfaces/auth.interface'
 import { Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import * as bcrypt from 'bcrypt'
@@ -48,7 +48,7 @@ export class AuthService {
     }
   }
 
-  async getAccessToken(user: User): Promise<{ access_token: string }> {
+  async getAccessToken(user: User): Promise<IAccessToken> {
     try {
       const payload = { name: user.email, sub: user.id }
       return {
@@ -194,7 +194,7 @@ export class AuthService {
   async refreshToken(
     payload: GetRefreshTokenDto,
     user_id: number
-  ): Promise<{ access_token: string }> {
+  ): Promise<IAccessToken> {
     try {
       if (payload.sub !== user_id) {
         throw Error

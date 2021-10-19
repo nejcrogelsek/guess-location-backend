@@ -7,7 +7,7 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common'
-import { IAuthReturnData } from '../../interfaces/auth.interface'
+import { IAccessToken, IAuthReturnData } from '../../interfaces/auth.interface'
 import { AuthService } from './auth.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LocalAuthGuard } from './local-auth.guard'
@@ -46,7 +46,7 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'API verify email address.' })
   @ApiBadRequestResponse()
   @Get('/verify-email')
-  verifyEmail(@Req() req: Request, @Res() res: Response) {
+  verifyEmail(@Req() req: Request, @Res() res: Response): Promise<void> {
     return this.authService.verifyEmail(req, res)
   }
 
@@ -57,7 +57,7 @@ export class AuthController {
   refreshToken(
     @Req() req,
     @Body() body: GetRefreshTokenDto
-  ): Promise<{ access_token: string }> {
+  ): Promise<IAccessToken> {
     return this.authService.refreshToken(body, req.user.sub)
   }
 

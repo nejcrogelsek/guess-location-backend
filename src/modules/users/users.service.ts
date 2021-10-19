@@ -91,7 +91,7 @@ export class UsersService {
     }
   }
 
-  async uploadFile(res: Response) {
+  async uploadFile(res: Response): Promise<void> {
     try {
       const url = await this.generateUploadUrl()
       res.send({ url })

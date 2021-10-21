@@ -9,7 +9,11 @@ export class CreateGuessDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  distance: number
+  lat: string
+
+  @ApiProperty()
+  @IsNotEmpty()
+  lng: string
 
   @ApiProperty()
   @IsNotEmpty()

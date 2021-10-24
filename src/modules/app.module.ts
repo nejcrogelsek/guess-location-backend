@@ -29,7 +29,7 @@ import { UsersModule } from './users/users.module'
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
 		autoLoadEntities: true,
-        synchronize: true
+        synchronize: false
       })
     }),
     AuthModule,

@@ -170,7 +170,8 @@ describe('PlacesController (e2e)', () => {
   it('/location/guess/:id (POST)', async () => {
     const dto: CreateGuessDto = {
       location_id: location.id,
-      distance: 1000,
+      lat: '100',
+	  lng: '200',
       address: 'Unknown location'
     }
 
@@ -186,7 +187,7 @@ describe('PlacesController (e2e)', () => {
           id: expect.any(Number),
           location_id: location.id,
           user_id: user.id,
-          distance: 1000,
+          distance: expect.any(Number),
           address: 'Unknown location',
           created_at: expect.any(String),
           updated_at: expect.any(String)
@@ -206,7 +207,7 @@ describe('PlacesController (e2e)', () => {
         expect(res.body).toEqual({
           location_id: location.id,
           user_id: user.id,
-          distance: 1000,
+          distance: expect.any(Number),
           address: 'Unknown location',
           created_at: expect.any(String),
           updated_at: expect.any(String)

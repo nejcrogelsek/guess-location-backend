@@ -19,8 +19,8 @@ export class UpdateUserDto {
   @IsOptional()
   last_name: string
 
-  @ApiProperty({ required: false })
+  @ApiProperty()
+  @IsNotEmpty()
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/) 
-  @IsOptional()
   password: string
 }

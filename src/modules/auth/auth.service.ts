@@ -1,8 +1,8 @@
 import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  UnauthorizedException
+	BadRequestException,
+	Injectable,
+	Logger,
+	UnauthorizedException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity'
@@ -22,211 +22,206 @@ import { IUserData } from '../../interfaces/user.interface'
 
 @Injectable()
 export class AuthService {
-  private logger = new Logger()
-  constructor(
-    @InjectRepository(User) private usersRepository: Repository<User>,
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    configService: ConfigService
-  ) {
-    sgMail.setApiKey(configService.get('SENDGRID_API_KEY'))
-  }
+	private logger = new Logger()
+	constructor(
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		private usersService: UsersService,
+		private jwtService: JwtService,
+		configService: ConfigService
+	) {
+		sgMail.setApiKey(configService.get('SENDGRID_API_KEY'))
+	}
 
-  async validateUser(email: string, password: string): Promise<User> {
-    try {
-      const user = await this.usersRepository.findOne({ email })
-      if (user && (await bcrypt.compare(password, user.password))) {
-        return user
-      }
+	async validateUser(email: string, password: string): Promise<User> {
+		try {
+			const user = await this.usersRepository.findOne({ email })
+			if (user && (await bcrypt.compare(password, user.password))) {
+				return user
+			}
 
-      return null
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException('Error validation a user.')
-    } finally {
-      this.logger.log('Validating a user...')
-    }
-  }
+			return null
+		} catch (err) {
+			console.log(err)
+			throw new BadRequestException('Error validation a user.')
+		} finally {
+			this.logger.log('Validating a user...')
+		}
+	}
 
-  async getAccessToken(user: User): Promise<IAccessToken> {
-    try {
-      const payload = { name: user.email, sub: user.id }
-      return {
-        access_token: this.jwtService.sign(payload)
-      }
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException(
-        'Error while getting the user access token.'
-      )
-    } finally {
-      this.logger.log('Getting the user access token.')
-    }
-  }
+	async getAccessToken(user: User): Promise<IAccessToken> {
+		try {
+			const payload = { name: user.email, sub: user.id }
+			return {
+				access_token: this.jwtService.sign(payload)
+			}
+		} catch (err) {
+			console.log(err)
+			throw new BadRequestException(
+				'Error while getting the user access token.'
+			)
+		} finally {
+			this.logger.log('Getting the user access token.')
+		}
+	}
 
-  async login(loginUserDto: LoginUserDto): Promise<IAuthReturnData> {
-    try {
-      const user = await this.usersRepository.findOne({
-        email: loginUserDto.username
-      })
-      if (!user.confirmed) {
-        throw new UnauthorizedException('Please confirm your email to login.')
-      }
-      const { access_token } = await this.getAccessToken(user)
-      const { id, email, first_name, last_name, profile_image, confirmed } =
-        user
-      return {
-        user: {
-          id,
-          email,
-          first_name,
-          last_name,
-          profile_image,
-          confirmed
-        },
-        access_token
-      }
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException('Error while logging user.')
-    } finally {
-      this.logger.log('Logging user in application.')
-    }
-  }
+	async login(loginUserDto: LoginUserDto): Promise<IAuthReturnData> {
+		this.logger.log('Logging user in application.')
+		const user = await this.usersRepository.findOne({
+			email: loginUserDto.username
+		})
+		if (!user.confirmed) {
+			throw new BadRequestException('Please confirm your email to login.')
+		}
+		const { access_token } = await this.getAccessToken(user)
+		const { id, email, first_name, last_name, profile_image, confirmed } =
+			user
+		return {
+			user: {
+				id,
+				email,
+				first_name,
+				last_name,
+				profile_image,
+				confirmed
+			},
+			access_token
+		}
+	}
 
-  async register(
-    createUserDto: CreateUserDto,
-    request
-  ): Promise<IAuthReturnData> {
-    try {
-      const user = await this.usersRepository.findOne({
-        email: createUserDto.email
-      })
-      if (user && createUserDto.email === user.email) {
-        throw new BadRequestException(
-          `User with email: ${createUserDto.email} already exists.`
-        )
-      }
-      const { password, ...rest } = createUserDto
-      const salt = await bcrypt.genSalt(10)
-      const hashedPassword: string = await bcrypt.hash(password, salt)
 
-      const createdUser = this.usersRepository.create({
-        ...rest,
-        email_token: randomBytes(64).toString('hex'),
-        password: hashedPassword
-      })
+	async register(
+		createUserDto: CreateUserDto,
+		request
+	): Promise<IAuthReturnData> {
+		try {
+			const user = await this.usersRepository.findOne({
+				email: createUserDto.email
+			})
+			if (user && createUserDto.email === user.email) {
+				throw new BadRequestException(
+					`User with email: ${createUserDto.email} already exists.`
+				)
+			}
+			const { password, ...rest } = createUserDto
+			const salt = await bcrypt.genSalt(10)
+			const hashedPassword: string = await bcrypt.hash(password, salt)
 
-      const savedUser = await this.usersRepository.save(createdUser)
+			const createdUser = this.usersRepository.create({
+				...rest,
+				email_token: randomBytes(64).toString('hex'),
+				password: hashedPassword
+			})
 
-      const { access_token } = await this.getAccessToken(savedUser)
+			const savedUser = await this.usersRepository.save(createdUser)
 
-      const { id, email, first_name, last_name, profile_image, confirmed } =
-        savedUser
+			const { access_token } = await this.getAccessToken(savedUser)
 
-      const msg = {
-        from: {
-          name: 'Geotagger',
-          email: 'nejcrogelsek0@gmail.com'
-        },
-        to: createUserDto.email,
-        subject: 'Geotagger - verify your email',
-        text: `
+			const { id, email, first_name, last_name, profile_image, confirmed } =
+				savedUser
+
+			const msg = {
+				from: {
+					name: 'Geotagger',
+					email: 'nejcrogelsek0@gmail.com'
+				},
+				to: createUserDto.email,
+				subject: 'Geotagger - verify your email',
+				text: `
 			   Hello, thanks for registering on our site.
 			   Please copy and paste the address below to verify your account.
 			   http://localhost:8080/auth/verify-email?token=${createdUser.email_token}
 			`,
-        html: `
+				html: `
 				<h1>Hello</h1>
 				<p>Thanks for registering on our site.</p>
 				<p>Please click on the link below to verify your account.</p>
 				<a href='${request.protocol}://${request.hostname}:8080/auth/verify-email?token=${createdUser.email_token}'>Verify your account</a>
 			`
-      }
-      await sgMail.send(msg)
+			}
+			await sgMail.send(msg)
 
-      return {
-        user: {
-          id,
-          email,
-          first_name,
-          last_name,
-          profile_image,
-          confirmed
-        },
-        access_token
-      }
-    } catch (err) {
-      console.log(err)
-      throw new BadRequestException('Please check your credentials.')
-    } finally {
-      this.logger.log('Creating a new user.')
-    }
-  }
+			return {
+				user: {
+					id,
+					email,
+					first_name,
+					last_name,
+					profile_image,
+					confirmed
+				},
+				access_token
+			}
+		} catch (err) {
+			console.log(err)
+			throw new BadRequestException('Please check your credentials.')
+		} finally {
+			this.logger.log('Creating a new user.')
+		}
+	}
 
-  async verifyEmail(req: Request, res: Response) {
-    try {
-      const user = await this.usersRepository.findOne({
-        email_token: req.query.token.toString()
-      })
-      if (!user) {
-        throw new BadRequestException(
-          'Token is invalid. Please contact us for assistance.'
-        )
-      }
-      user.email_token = null
-      user.confirmed = true
-      await this.usersRepository.save(user)
+	async verifyEmail(req: Request, res: Response) {
+		try {
+			const user = await this.usersRepository.findOne({
+				email_token: req.query.token.toString()
+			})
+			if (!user) {
+				throw new BadRequestException(
+					'Token is invalid. Please contact us for assistance.'
+				)
+			}
+			user.email_token = null
+			user.confirmed = true
+			await this.usersRepository.save(user)
 
-      res.redirect(
-        'http://localhost:3000/login?message="Your email successfully validated. Now you can login."'
-      )
-    } catch (err) {
-      console.log(err)
-      throw new UnauthorizedException(
-        'Token is invalid. Please contact us for assistance.'
-      )
-    } finally {
-      this.logger.log('Verifing email address')
-    }
-  }
+			res.redirect(
+				'http://localhost:3000/login?message="Your email successfully validated. Now you can login."'
+			)
+		} catch (err) {
+			console.log(err)
+			throw new UnauthorizedException(
+				'Token is invalid. Please contact us for assistance.'
+			)
+		} finally {
+			this.logger.log('Verifing email address')
+		}
+	}
 
-  async refreshToken(
-    payload: GetRefreshTokenDto,
-    user_id: number
-  ): Promise<IAccessToken> {
-    try {
-      if (payload.sub !== user_id) {
-        throw Error
-      }
-      const access_token = this.jwtService.sign(payload)
-      return {
-        access_token
-      }
-    } catch (err) {
-      console.log(err.message)
-      throw new BadRequestException()
-    } finally {
-      this.logger.log('Request refresh token.')
-    }
-  }
+	async refreshToken(
+		payload: GetRefreshTokenDto,
+		user_id: number
+	): Promise<IAccessToken> {
+		try {
+			if (payload.sub !== user_id) {
+				throw Error
+			}
+			const access_token = this.jwtService.sign(payload)
+			return {
+				access_token
+			}
+		} catch (err) {
+			console.log(err.message)
+			throw new BadRequestException()
+		} finally {
+			this.logger.log('Request refresh token.')
+		}
+	}
 
-  async me(req): Promise<IUserData> {
-    try {
-      const user = await this.usersService.findById(req.user.sub)
-      return {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        profile_image: user.profile_image,
-        confirmed: user.confirmed
-      }
-    } catch (err) {
-      console.log(err.message)
-      throw new BadRequestException()
-    } finally {
-      this.logger.log('Authenticated user requesting for data. function => me')
-    }
-  }
+	async me(req): Promise<IUserData> {
+		try {
+			const user = await this.usersService.findById(req.user.sub)
+			return {
+				id: user.id,
+				email: user.email,
+				first_name: user.first_name,
+				last_name: user.last_name,
+				profile_image: user.profile_image,
+				confirmed: user.confirmed
+			}
+		} catch (err) {
+			console.log(err.message)
+			throw new BadRequestException()
+		} finally {
+			this.logger.log('Authenticated user requesting for data. function => me')
+		}
+	}
 }
